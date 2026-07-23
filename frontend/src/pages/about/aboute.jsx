@@ -266,35 +266,6 @@ export default function About() {
 
 			<Perforation />
 
-			{/* Meet our experts */}
-			<section className="eip-section">
-				<div className="eip-container">
-					<Reveal className="eip-section__head">
-						<p className="eip-eyebrow">SCHEDULE C — COUNSEL ON RECORD</p>
-						<h2 className="eip-font-display eip-h2" style={{ maxWidth: "48rem" }}>
-							A multidisciplinary team of attorneys, agents and engineers.
-						</h2>
-					</Reveal>
-
-					<div className="eip-experts__grid">
-						{teamMembers.map((member, i) => (
-							<Reveal key={member.name} delay={i * 90} className="eip-expert-card">
-								<div className="eip-expert-card__media">
-									<img src={member.image} alt={member.name} loading="lazy" />
-									<span className="eip-expert-card__reg eip-font-mono">REG. {member.reg}</span>
-								</div>
-								<div className="eip-expert-card__bar" aria-hidden="true" />
-								<div className="eip-expert-card__body">
-									<h3 className="eip-expert-card__name">{member.name}</h3>
-									<p className="eip-expert-card__role">{member.role}</p>
-									<p className="eip-expert-card__qual">{member.qualification}</p>
-								</div>
-							</Reveal>
-						))}
-					</div>
-				</div>
-			</section>
-
 			{/* Testimonials — case notes */}
 			<section className="eip-section eip-section--dark">
 				<div className="eip-container eip-container--medium">

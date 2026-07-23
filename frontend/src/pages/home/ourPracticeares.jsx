@@ -6,8 +6,13 @@ import {
   Scale,
   Lightbulb,
   PenTool,
-  ArrowUpRight,
 } from "lucide-react";
+import patentProsecutionImg from "../../assets/patent-prosecution.jpg";
+import designRegistrationImg from "../../assets/Patent Design Registration.jpg";
+import trademarkRegistrationImg from "../../assets/trademark-registration.jpg";
+import softwareImg from "../../assets/software.webp";
+import ipLitigationImg from "../../assets/IP litigation.jpg";
+import ipStrategyImg from "../../assets/IP strategy & consulting.jpg";
 
 const services = [
   {
@@ -17,25 +22,23 @@ const services = [
     description:
       "End-to-end provisional, complete and PCT patent drafting, filing and prosecution across 150+ jurisdictions.",
     tag: "Flagship",
+    image: patentProsecutionImg,
   },
- 
- {
+  {
     icon: PenTool,
     code: "DES / 02",
     title: "Design registration",
     description:
       "Protect the visual and aesthetic features of your products under the Designs Act and Hague.",
+    image: designRegistrationImg,
   },
- 
- 
- 
- 
   {
     icon: Shield,
     code: "TM / 03",
     title: "Trademark registration",
     description:
       "Brand clearance search, filing, opposition handling and global trademark portfolio management.",
+    image: trademarkRegistrationImg,
   },
   {
     icon: Copyright,
@@ -43,6 +46,7 @@ const services = [
     title: "Copyright services",
     description:
       "Protection for literary, artistic, musical, software and audio-visual works.",
+    image: softwareImg,
   },
   {
     icon: Scale,
@@ -50,6 +54,7 @@ const services = [
     title: "IP litigation",
     description:
       "Strategic representation in infringement suits, oppositions and enforcement before courts and IPAB.",
+    image: ipLitigationImg,
   },
   {
     icon: Lightbulb,
@@ -57,8 +62,8 @@ const services = [
     title: "IP strategy & consulting",
     description:
       "Patent landscaping, freedom-to-operate, valuation and portfolio strategy aligned to business goals.",
+    image: ipStrategyImg,
   },
-  
 ];
 
 export default function Services() {
@@ -112,47 +117,59 @@ export default function Services() {
         </div>
 
         {/* Grid — each card reads like a registry entry, filed under its own docket code */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mt-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-12">
           {services.map((service, index) => {
             const Icon = service.icon;
 
             return (
               <div
                 key={index}
-                className="group relative bg-white overflow-hidden ring-1 ring-[#DEDACB] transition-all duration-400 hover:-translate-y-1 hover:ring-[#10182E] hover:shadow-[0_25px_50px_-15px_rgba(16,24,46,0.35)]"
+                className="group relative overflow-hidden rounded-[2rem] bg-white/95 ring-1 ring-[#DEDACB] transition-all duration-500 hover:-translate-y-1.5 hover:ring-[#10182E] hover:shadow-[0_30px_60px_-20px_rgba(16,24,46,0.45)]"
               >
                 {/* Registration corner marks — draw in on hover, like a document
                     aligning under a stamp. The one signature move on the page. */}
-                <span className="absolute top-2.5 left-2.5 w-3 h-3 border-t border-l border-[#C89B3C]/40 transition-all duration-300 group-hover:w-5 group-hover:h-5 group-hover:border-[#C89B3C]" />
-                <span className="absolute top-2.5 right-2.5 w-3 h-3 border-t border-r border-[#C89B3C]/40 transition-all duration-300 group-hover:w-5 group-hover:h-5 group-hover:border-[#C89B3C]" />
-                <span className="absolute bottom-2.5 left-2.5 w-3 h-3 border-b border-l border-[#C89B3C]/40 transition-all duration-300 group-hover:w-5 group-hover:h-5 group-hover:border-[#C89B3C]" />
-                <span className="absolute bottom-2.5 right-2.5 w-3 h-3 border-b border-r border-[#C89B3C]/40 transition-all duration-300 group-hover:w-5 group-hover:h-5 group-hover:border-[#C89B3C]" />
+                <span className="absolute top-2.5 left-2.5 w-3 h-3 border-t border-l border-[#C89B3C]/50 z-10 transition-all duration-300 group-hover:w-5 group-hover:h-5 group-hover:border-white" />
+                <span className="absolute top-2.5 right-2.5 w-3 h-3 border-t border-r border-[#C89B3C]/50 z-10 transition-all duration-300 group-hover:w-5 group-hover:h-5 group-hover:border-white" />
 
-                <div className="relative p-7 lg:p-8">
-                  <div className="flex items-start justify-between">
+                {/* Photo — the card is wrapped around it, with the seal and
+                    docket code inlaid on the image like an embossed stamp */}
+                <div className="relative h-48 overflow-hidden rounded-t-[2rem]">
+                  <img
+                    src={service.image}
+                    alt={service.title}
+                    className="h-full w-full object-cover grayscale-[15%] transition-all duration-700 ease-out group-hover:scale-[1.06] group-hover:grayscale-0"
+                  />
+                  {/* Ledger-tint wash so every photo, whatever its source colours,
+                      reads as part of the same registry */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#10182E]/90 via-[#10182E]/10 to-transparent" />
+                  <div className="absolute inset-0 bg-[#9C7423]/10 mix-blend-multiply" />
+
+                  <div className="absolute inset-x-0 bottom-0 flex items-end justify-between p-5">
                     {/* Seal-style icon badge — thin ring, fills solid on hover */}
-                    <div className="flex h-12 w-12 items-center justify-center rounded-full ring-1 ring-[#C89B3C]/50 transition-all duration-300 group-hover:bg-[#C89B3C] group-hover:ring-[#C89B3C]">
+                    <div className="flex h-11 w-11 items-center justify-center rounded-full bg-white/10 backdrop-blur-sm ring-1 ring-white/40 transition-all duration-300 group-hover:bg-[#C89B3C] group-hover:ring-[#C89B3C]">
                       <Icon
-                        size={19}
+                        size={18}
                         strokeWidth={1.6}
-                        className="text-[#9C7423] transition-colors duration-300 group-hover:text-white"
+                        className="text-white"
                       />
                     </div>
 
-                    <span className="font-docket text-[11px] tracking-wide text-[#9C7423]/70 pt-1 transition-colors duration-300 group-hover:text-[#C89B3C]">
+                    <span className="font-docket text-[11px] tracking-wide text-white/80 pb-1">
                       {service.code}
                     </span>
                   </div>
+                </div>
 
+                <div className="relative p-7 lg:p-8">
                   {service.tag && (
-                    <p className="font-docket mt-6 text-[10px] font-semibold uppercase tracking-wide text-[#9C7423]">
+                    <p className="font-docket text-[10px] font-semibold uppercase tracking-wide text-[#9C7423]">
                       {service.tag}
                     </p>
                   )}
 
                   <h3
                     className={`font-display text-[#10182E] text-xl leading-snug ${
-                      service.tag ? "mt-2" : "mt-6"
+                      service.tag ? "mt-2" : ""
                     }`}
                   >
                     {service.title}
@@ -161,17 +178,11 @@ export default function Services() {
                   <p className="mt-3 text-sm leading-relaxed text-[#5B5F6B]">
                     {service.description}
                   </p>
-
-                  <div className="mt-6 flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-[#9C7423] border-t border-[#EFEADA] pt-4 group-hover:border-[#2A3555]">
-                    <span className="transition-colors duration-300 group-hover:text-[#C89B3C]">
-                      View practice area
-                    </span>
-                    <ArrowUpRight
-                      size={13}
-                      className="transition-all duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-[#C89B3C]"
-                    />
-                  </div>
                 </div>
+
+                {/* Quiet gilt edge along the base — the premium finish,
+                    a hairline rather than a call-to-action */}
+                <div className="h-[3px] w-full bg-gradient-to-r from-[#C89B3C]/20 via-[#C89B3C] to-[#C89B3C]/20 scale-x-0 origin-left transition-transform duration-500 group-hover:scale-x-100 rounded-b-[2rem]" />
               </div>
             );
           })}
