@@ -18,13 +18,23 @@ import {
 } from "lucide-react";
 
 /**
- * Trademark Opposition — single-section landing component.
- * Signature idea: opposition is a race against a strict, non-extendable
- * filing clock. The hero is built as a stamped Journal entry with a live
- * countdown; the process section reads like the actual statutory timeline.
+ * Perceptive Brains IP — Trademark Opposition
+ * Design system: Deep Navy → Royal Blue gradients, Rich/Soft Gold accents,
+ * glassmorphism on navy, generous white space on light sections.
+ * Signature element: the gold foil "Journal Seal" countdown card — a wax-seal
+ * motif reframed as a live statutory clock, tying the firm's premium mark
+ * to the one fact that actually drives opposition strategy: time.
  */
 
-const FONT_ID = "tmop-fonts";
+const FONT_ID = "tmop-fonts-pb";
+
+const NAVY = "#082B5B";
+const ROYAL = "#103D7A";
+const GOLD = "#C89B2C";
+const GOLD_SOFT = "#D8B65A";
+const BG = "#F8FAFC";
+const TEXT_DARK = "#0F172A";
+const BORDER = "#E2E8F0";
 
 function useGoogleFonts() {
   useEffect(() => {
@@ -206,6 +216,7 @@ export default function TrademarkOpposition() {
   const [copied, setCopied] = useState(false);
 
   const fontDisplay = { fontFamily: "'Fraunces', ui-serif, Georgia, serif" };
+  const fontBody = { fontFamily: "'Inter', ui-sans-serif, system-ui, sans-serif" };
   const fontMono = { fontFamily: "'JetBrains Mono', ui-monospace, monospace" };
 
   const handleCopyDeadline = () => {
@@ -215,35 +226,73 @@ export default function TrademarkOpposition() {
   };
 
   return (
-    <div className="min-h-screen bg-stone-50 text-slate-900 font-sans antialiased">
+    <div className="min-h-screen antialiased" style={{ backgroundColor: BG, color: TEXT_DARK, ...fontBody }}>
       {/* HERO */}
-      <section className="relative overflow-hidden bg-slate-950 text-stone-100">
+      <section
+        className="relative overflow-hidden"
+        style={{ background: `linear-gradient(160deg, ${NAVY} 0%, ${ROYAL} 100%)` }}
+      >
+        {/* faint gold monogram ring — nods to a seal/crest without a literal logo */}
         <div
-          className="pointer-events-none absolute inset-0 opacity-[0.07]"
+          className="pointer-events-none absolute -right-24 -top-24 h-[420px] w-[420px] rounded-full opacity-[0.10]"
+          style={{ border: `1.5px solid ${GOLD_SOFT}` }}
+        />
+        <div
+          className="pointer-events-none absolute -right-8 -top-8 h-[320px] w-[320px] rounded-full opacity-[0.14]"
+          style={{ border: `1px solid ${GOLD_SOFT}` }}
+        />
+        <div
+          className="pointer-events-none absolute inset-0 opacity-[0.05]"
           style={{
-            backgroundImage: "radial-gradient(circle, rgba(255,255,255,0.9) 1px, transparent 1px)",
-            backgroundSize: "22px 22px",
+            backgroundImage: `radial-gradient(circle, ${GOLD_SOFT} 1px, transparent 1px)`,
+            backgroundSize: "26px 26px",
           }}
         />
-        <div className="relative mx-auto max-w-6xl px-6 py-20 md:py-28">
-          <div className="grid gap-14 md:grid-cols-[1.15fr_0.85fr] md:items-center">
-            <Reveal>
+
+        {/* eyebrow crest bar */}
+        <div className="relative mx-auto max-w-6xl px-6 pt-10">
+          <Reveal>
+            <div className="flex items-center gap-3">
               <div
-                className="mb-6 inline-flex items-center gap-2 rounded-full border border-amber-500/40 bg-amber-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-widest text-amber-400"
-                style={fontMono}
+                className="flex h-9 w-9 items-center justify-center rounded-full"
+                style={{ border: `1px solid ${GOLD}`, background: "rgba(200,155,44,0.08)" }}
+              >
+                <Scale className="h-4 w-4" style={{ color: GOLD_SOFT }} strokeWidth={1.6} />
+              </div>
+              <span
+                className="text-xs font-semibold uppercase tracking-[0.28em]"
+                style={{ color: GOLD_SOFT, ...fontMono }}
+              >
+                Perceptive Brains IP
+              </span>
+            </div>
+          </Reveal>
+        </div>
+
+        <div className="relative mx-auto max-w-6xl px-6 py-16 md:py-24">
+          <div className="grid gap-14 md:grid-cols-[1.15fr_0.85fr] md:items-center">
+            <Reveal delay={80}>
+              <div
+                className="mb-6 inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-widest"
+                style={{
+                  border: `1px solid rgba(216,182,90,0.45)`,
+                  background: "rgba(200,155,44,0.10)",
+                  color: GOLD_SOFT,
+                  ...fontMono,
+                }}
               >
                 <CircleDot className="h-3 w-3 animate-pulse" />
                 Trade Marks Journal — Opposition Notice
               </div>
               <h1
-                className="text-4xl leading-[1.08] text-stone-50 md:text-6xl"
-                style={{ ...fontDisplay, fontWeight: 600 }}
+                className="text-4xl leading-[1.08] md:text-6xl"
+                style={{ ...fontDisplay, fontWeight: 600, color: "#FFFFFF" }}
               >
                 Your mark is published.
                 <br />
-                <span className="text-amber-400">The clock is already running.</span>
+                <span style={{ color: GOLD_SOFT }}>The clock is already running.</span>
               </h1>
-              <p className="mt-6 max-w-xl text-lg leading-relaxed text-stone-300">
+              <p className="mt-6 max-w-xl text-lg leading-relaxed" style={{ color: "rgba(255,255,255,0.72)" }}>
                 Once a mark clears examination, anyone with real grounds has a strict,
                 non-extendable window to oppose it. Miss it, and the right to object is
                 gone for good.
@@ -251,29 +300,60 @@ export default function TrademarkOpposition() {
               <div className="mt-9 flex flex-wrap gap-4">
                 <a
                   href="#consult"
-                  className="inline-flex items-center gap-2 rounded-full bg-amber-500 px-6 py-3 text-sm font-semibold text-slate-950 transition-colors hover:bg-amber-400"
+                  className="inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-semibold transition-colors"
+                  style={{ background: GOLD, color: NAVY }}
+                  onMouseEnter={(e) => (e.currentTarget.style.background = GOLD_SOFT)}
+                  onMouseLeave={(e) => (e.currentTarget.style.background = GOLD)}
                 >
                   File an opposition <ArrowRight className="h-4 w-4" />
                 </a>
                 <a
                   href="#timeline"
-                  className="inline-flex items-center gap-2 rounded-full border border-stone-600 px-6 py-3 text-sm font-semibold text-stone-200 transition-colors hover:border-stone-400"
+                  className="inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-semibold transition-colors"
+                  style={{ border: `1px solid ${GOLD}`, color: GOLD_SOFT }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = GOLD;
+                    e.currentTarget.style.color = NAVY;
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = "transparent";
+                    e.currentTarget.style.color = GOLD_SOFT;
+                  }}
                 >
                   See the full timeline
                 </a>
               </div>
             </Reveal>
 
-            {/* Countdown stamp card */}
-            <Reveal delay={150}>
-              <div className="relative rounded-2xl border border-stone-700 bg-slate-900 p-6 shadow-2xl shadow-black/40">
-                <div className="absolute -top-3 -right-3 flex h-16 w-16 rotate-12 items-center justify-center rounded-full border-2 border-amber-500 text-amber-500">
-                  <Stamp className="h-7 w-7" strokeWidth={1.5} />
+            {/* Countdown stamp card — glassmorphism seal */}
+            <Reveal delay={200}>
+              <div
+                className="relative rounded-2xl p-6 shadow-2xl"
+                style={{
+                  background: "rgba(255,255,255,0.06)",
+                  backdropFilter: "blur(16px)",
+                  border: `1px solid rgba(216,182,90,0.35)`,
+                  boxShadow: "0 25px 60px -15px rgba(0,0,0,0.55)",
+                }}
+              >
+                <div
+                  className="absolute -top-4 -right-4 flex h-16 w-16 rotate-12 items-center justify-center rounded-full"
+                  style={{
+                    border: `2px solid ${GOLD}`,
+                    background: `radial-gradient(circle, rgba(200,155,44,0.18), transparent 70%)`,
+                  }}
+                >
+                  <Stamp className="h-7 w-7" style={{ color: GOLD_SOFT }} strokeWidth={1.5} />
                 </div>
-                <p className="text-xs font-semibold uppercase tracking-widest text-stone-400" style={fontMono}>
+                <p
+                  className="text-xs font-semibold uppercase tracking-widest"
+                  style={{ color: GOLD_SOFT, ...fontMono }}
+                >
                   Sample case · illustrative only
                 </p>
-                <p className="mt-1 text-sm text-stone-300">Opposition window closes in:</p>
+                <p className="mt-1 text-sm" style={{ color: "rgba(255,255,255,0.75)" }}>
+                  Opposition window closes in:
+                </p>
 
                 <div className="mt-5 grid grid-cols-4 gap-2 text-center">
                   {[
@@ -282,28 +362,47 @@ export default function TrademarkOpposition() {
                     { v: m, label: "min" },
                     { v: s, label: "sec" },
                   ].map((u) => (
-                    <div key={u.label} className="rounded-lg border border-stone-700 bg-slate-950 py-3">
-                      <div className="text-2xl font-bold text-amber-400 md:text-3xl" style={fontMono}>
+                    <div
+                      key={u.label}
+                      className="rounded-lg py-3"
+                      style={{ border: "1px solid rgba(255,255,255,0.12)", background: "rgba(8,43,91,0.4)" }}
+                    >
+                      <div className="text-2xl font-bold md:text-3xl" style={{ color: GOLD_SOFT, ...fontMono }}>
                         {Pad2(u.v)}
                       </div>
-                      <div className="mt-1 text-[10px] uppercase tracking-widest text-stone-500">
+                      <div
+                        className="mt-1 text-[10px] uppercase tracking-widest"
+                        style={{ color: "rgba(255,255,255,0.45)" }}
+                      >
                         {u.label}
                       </div>
                     </div>
                   ))}
                 </div>
 
-                <div className="mt-5 flex items-center justify-between border-t border-stone-800 pt-4 text-xs text-stone-400">
+                <div
+                  className="mt-5 flex items-center justify-between pt-4 text-xs"
+                  style={{ borderTop: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.55)" }}
+                >
                   <span style={fontMono}>Closes {targetDate.toDateString()}</span>
                   <button
                     onClick={handleCopyDeadline}
-                    className="inline-flex items-center gap-1 rounded-full border border-stone-700 px-2.5 py-1 text-stone-300 transition-colors hover:border-amber-500 hover:text-amber-400"
+                    className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 transition-colors"
+                    style={{ border: "1px solid rgba(255,255,255,0.18)", color: "rgba(255,255,255,0.75)" }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.borderColor = GOLD;
+                      e.currentTarget.style.color = GOLD_SOFT;
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.borderColor = "rgba(255,255,255,0.18)";
+                      e.currentTarget.style.color = "rgba(255,255,255,0.75)";
+                    }}
                   >
                     <Copy className="h-3 w-3" />
                     {copied ? "Copied" : "Copy"}
                   </button>
                 </div>
-                <p className="mt-3 text-[11px] leading-relaxed text-stone-500">
+                <p className="mt-3 text-[11px] leading-relaxed" style={{ color: "rgba(255,255,255,0.42)" }}>
                   Your deadline runs from your mark's actual Journal publication date —
                   this timer is a demonstration, not legal advice.
                 </p>
@@ -312,49 +411,65 @@ export default function TrademarkOpposition() {
           </div>
         </div>
         <div
-          className="h-3 w-full"
+          className="h-[3px] w-full"
           style={{
-            backgroundImage:
-              "repeating-linear-gradient(90deg, transparent, transparent 6px, rgba(255,255,255,0.15) 6px, rgba(255,255,255,0.15) 10px)",
+            backgroundImage: `repeating-linear-gradient(90deg, transparent, transparent 6px, rgba(216,182,90,0.5) 6px, rgba(216,182,90,0.5) 10px)`,
           }}
         />
       </section>
 
       {/* WHAT IS OPPOSITION */}
-      <section className="mx-auto max-w-6xl px-6 py-20">
+      <section className="mx-auto max-w-6xl px-6 py-24">
         <div className="grid gap-12 md:grid-cols-2 md:items-start">
           <Reveal>
-            <p className="text-xs font-semibold uppercase tracking-widest text-amber-600" style={fontMono}>
+            <p className="text-xs font-semibold uppercase tracking-[0.24em]" style={{ color: GOLD, ...fontMono }}>
               What it is
             </p>
-            <h2 className="mt-3 text-3xl text-slate-900 md:text-4xl" style={{ ...fontDisplay, fontWeight: 600 }}>
+            <div className="mt-3 h-[3px] w-12" style={{ background: GOLD }} />
+            <h2
+              className="mt-5 text-3xl md:text-4xl"
+              style={{ ...fontDisplay, fontWeight: 600, color: NAVY }}
+            >
               A formal challenge, filed before a mark ever registers
             </h2>
-            <p className="mt-5 leading-relaxed text-slate-600">
+            <p className="mt-5 leading-relaxed" style={{ color: "#475569" }}>
               A trademark opposition is a proceeding before the Registrar that lets any
               interested party — a competitor, a prior user, or simply a member of the
               public with standing — object to an application after it's published for
               scrutiny, but before the certificate is granted.
             </p>
-            <p className="mt-4 leading-relaxed text-slate-600">
+            <p className="mt-4 leading-relaxed" style={{ color: "#475569" }}>
               It's the last checkpoint before a mark becomes enforceable property. Handled
               well, it stops confusingly similar or bad-faith marks from ever reaching the
               register. Handled late, the window simply closes.
             </p>
           </Reveal>
           <Reveal delay={120}>
-            <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
+            <div
+              className="rounded-2xl p-8"
+              style={{ background: "#FFFFFF", border: `1px solid ${BORDER}`, boxShadow: "0 8px 30px -12px rgba(8,43,91,0.15)" }}
+            >
               <div className="flex items-center gap-3">
-                <Clock className="h-5 w-5 text-red-700" />
-                <span className="text-sm font-semibold text-slate-900">Why the deadline matters</span>
+                <div
+                  className="flex h-9 w-9 items-center justify-center rounded-full"
+                  style={{ background: NAVY }}
+                >
+                  <Clock className="h-4 w-4" style={{ color: GOLD_SOFT }} />
+                </div>
+                <span className="text-sm font-semibold" style={{ color: NAVY }}>
+                  Why the deadline matters
+                </span>
               </div>
-              <p className="mt-4 leading-relaxed text-slate-600">
+              <p className="mt-4 leading-relaxed" style={{ color: "#475569" }}>
                 In India, the notice of opposition must be filed within four months of
                 publication in the Trade Marks Journal — a period the Registrar has no
                 power to extend. There is no late filing, no condonation, no exception.
               </p>
-              <div className="mt-5 flex items-center gap-2 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-800">
-                <AlertTriangle className="h-4 w-4 shrink-0" />
+              <div
+                className="mt-5 flex items-center gap-2 rounded-lg px-4 py-3 text-sm"
+                style={{ background: "rgba(200,155,44,0.08)", color: "#82631a", border: `1px solid rgba(200,155,44,0.25)` }}
+              >
+                <AlertTriangle className="h-4 w-4 shrink-0" style={{ color: GOLD }} />
                 Once the window shuts, the mark proceeds to registration unopposed.
               </div>
             </div>
@@ -363,16 +478,17 @@ export default function TrademarkOpposition() {
       </section>
 
       {/* GROUNDS */}
-      <section id="grounds" className="border-y border-slate-200 bg-white py-20">
+      <section id="grounds" className="py-24" style={{ background: "#FFFFFF", borderTop: `1px solid ${BORDER}`, borderBottom: `1px solid ${BORDER}` }}>
         <div className="mx-auto max-w-6xl px-6">
           <Reveal>
-            <p className="text-xs font-semibold uppercase tracking-widest text-amber-600" style={fontMono}>
+            <p className="text-xs font-semibold uppercase tracking-[0.24em]" style={{ color: GOLD, ...fontMono }}>
               Grounds
             </p>
-            <h2 className="mt-3 max-w-2xl text-3xl text-slate-900 md:text-4xl" style={{ ...fontDisplay, fontWeight: 600 }}>
+            <div className="mt-3 h-[3px] w-12" style={{ background: GOLD }} />
+            <h2 className="mt-5 max-w-2xl text-3xl md:text-4xl" style={{ ...fontDisplay, fontWeight: 600, color: NAVY }}>
               Six grounds that hold up before the Registrar
             </h2>
-            <p className="mt-4 max-w-2xl leading-relaxed text-slate-600">
+            <p className="mt-4 max-w-2xl leading-relaxed" style={{ color: "#475569" }}>
               An opposition needs more than discomfort with a new mark — it needs a
               ground the law recognizes. These are the ones that carry weight.
             </p>
@@ -381,12 +497,30 @@ export default function TrademarkOpposition() {
           <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {GROUNDS.map((g, i) => (
               <Reveal key={g.title} delay={i * 70}>
-                <div className="group h-full rounded-2xl border border-slate-200 p-6 transition-all hover:-translate-y-1 hover:border-amber-400 hover:shadow-lg">
-                  <div className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-slate-950 text-amber-400 transition-colors group-hover:bg-amber-500 group-hover:text-slate-950">
+                <div
+                  className="group h-full rounded-2xl p-6 transition-all hover:-translate-y-1"
+                  style={{ border: `1px solid ${BORDER}`, background: BG }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = GOLD;
+                    e.currentTarget.style.boxShadow = "0 20px 40px -18px rgba(8,43,91,0.25)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = BORDER;
+                    e.currentTarget.style.boxShadow = "none";
+                  }}
+                >
+                  <div
+                    className="inline-flex h-11 w-11 items-center justify-center rounded-full transition-colors"
+                    style={{ background: NAVY, color: GOLD_SOFT }}
+                  >
                     <g.icon className="h-5 w-5" strokeWidth={1.75} />
                   </div>
-                  <h3 className="mt-4 text-lg font-semibold text-slate-900">{g.title}</h3>
-                  <p className="mt-2 text-sm leading-relaxed text-slate-600">{g.body}</p>
+                  <h3 className="mt-4 text-lg font-semibold" style={{ color: NAVY }}>
+                    {g.title}
+                  </h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "#475569" }}>
+                    {g.body}
+                  </p>
                 </div>
               </Reveal>
             ))}
@@ -395,36 +529,47 @@ export default function TrademarkOpposition() {
       </section>
 
       {/* TIMELINE */}
-      <section id="timeline" className="mx-auto max-w-6xl px-6 py-20">
+      <section id="timeline" className="mx-auto max-w-6xl px-6 py-24">
         <Reveal>
-          <p className="text-xs font-semibold uppercase tracking-widest text-amber-600" style={fontMono}>
+          <p className="text-xs font-semibold uppercase tracking-[0.24em]" style={{ color: GOLD, ...fontMono }}>
             Process
           </p>
-          <h2 className="mt-3 max-w-2xl text-3xl text-slate-900 md:text-4xl" style={{ ...fontDisplay, fontWeight: 600 }}>
+          <div className="mt-3 h-[3px] w-12" style={{ background: GOLD }} />
+          <h2 className="mt-5 max-w-2xl text-3xl md:text-4xl" style={{ ...fontDisplay, fontWeight: 600, color: NAVY }}>
             Eight stages, start to decision
           </h2>
-          <p className="mt-4 max-w-2xl leading-relaxed text-slate-600">
+          <p className="mt-4 max-w-2xl leading-relaxed" style={{ color: "#475569" }}>
             Every stage below carries its own filing window. Miss one and you risk the
             application — or your opposition — being treated as abandoned.
           </p>
         </Reveal>
 
         <div className="relative mt-14 pl-8">
-          <div className="absolute left-[11px] top-2 bottom-2 w-px bg-slate-200" />
+          <div className="absolute left-[11px] top-2 bottom-2 w-px" style={{ background: BORDER }} />
           <div className="space-y-10">
             {TIMELINE.map((step, i) => (
               <Reveal key={step.title} delay={i * 60}>
                 <div className="relative">
-                  <div className="absolute -left-8 flex h-6 w-6 items-center justify-center rounded-full border-2 border-amber-500 bg-white text-[11px] font-bold text-amber-600">
+                  <div
+                    className="absolute -left-8 flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-bold"
+                    style={{ border: `2px solid ${GOLD}`, background: "#FFFFFF", color: GOLD }}
+                  >
                     {i + 1}
                   </div>
                   <div className="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:gap-4">
-                    <span className="shrink-0 text-xs font-semibold uppercase tracking-widest text-red-700" style={fontMono}>
+                    <span
+                      className="shrink-0 text-xs font-semibold uppercase tracking-widest"
+                      style={{ color: ROYAL, ...fontMono }}
+                    >
                       {step.day}
                     </span>
-                    <h3 className="text-lg font-semibold text-slate-900">{step.title}</h3>
+                    <h3 className="text-lg font-semibold" style={{ color: NAVY }}>
+                      {step.title}
+                    </h3>
                   </div>
-                  <p className="mt-1.5 max-w-2xl text-sm leading-relaxed text-slate-600">{step.body}</p>
+                  <p className="mt-1.5 max-w-2xl text-sm leading-relaxed" style={{ color: "#475569" }}>
+                    {step.body}
+                  </p>
                 </div>
               </Reveal>
             ))}
@@ -433,16 +578,21 @@ export default function TrademarkOpposition() {
       </section>
 
       {/* CHECKLIST */}
-      <section id="checklist" className="border-y border-slate-200 bg-slate-950 py-20 text-stone-100">
+      <section
+        id="checklist"
+        className="py-24"
+        style={{ background: `linear-gradient(160deg, ${NAVY} 0%, ${ROYAL} 100%)`, borderTop: `1px solid ${BORDER}`, borderBottom: `1px solid ${BORDER}` }}
+      >
         <div className="mx-auto grid max-w-6xl gap-12 px-6 md:grid-cols-[0.9fr_1.1fr] md:items-center">
           <Reveal>
-            <p className="text-xs font-semibold uppercase tracking-widest text-amber-400" style={fontMono}>
+            <p className="text-xs font-semibold uppercase tracking-[0.24em]" style={{ color: GOLD_SOFT, ...fontMono }}>
               Before you file
             </p>
-            <h2 className="mt-3 text-3xl md:text-4xl" style={{ ...fontDisplay, fontWeight: 600 }}>
+            <div className="mt-3 h-[3px] w-12" style={{ background: GOLD }} />
+            <h2 className="mt-5 text-3xl md:text-4xl" style={{ ...fontDisplay, fontWeight: 600, color: "#FFFFFF" }}>
               What to have ready
             </h2>
-            <p className="mt-4 leading-relaxed text-stone-300">
+            <p className="mt-4 leading-relaxed" style={{ color: "rgba(255,255,255,0.72)" }}>
               A well-evidenced notice moves faster and holds up better under
               cross-examination. Gather these before the four-month window narrows.
             </p>
@@ -450,9 +600,15 @@ export default function TrademarkOpposition() {
           <Reveal delay={100}>
             <ul className="space-y-4">
               {CHECKLIST.map((item) => (
-                <li key={item} className="flex items-start gap-3">
-                  <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-amber-400" />
-                  <span className="leading-relaxed text-stone-200">{item}</span>
+                <li
+                  key={item}
+                  className="flex items-start gap-3 rounded-xl p-4"
+                  style={{ background: "rgba(255,255,255,0.05)", backdropFilter: "blur(10px)", border: "1px solid rgba(216,182,90,0.2)" }}
+                >
+                  <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0" style={{ color: GOLD_SOFT }} />
+                  <span className="leading-relaxed" style={{ color: "rgba(255,255,255,0.88)" }}>
+                    {item}
+                  </span>
                 </li>
               ))}
             </ul>
@@ -461,29 +617,41 @@ export default function TrademarkOpposition() {
       </section>
 
       {/* CTA */}
-      <section id="consult" className="mx-auto max-w-6xl px-6 py-20">
+      <section id="consult" className="mx-auto max-w-6xl px-6 py-24">
         <Reveal>
-          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-amber-500 to-amber-600 px-8 py-14 text-slate-950 md:px-16">
-            <FileText className="pointer-events-none absolute -right-6 -top-6 h-40 w-40 rotate-12 text-slate-950/10" />
+          <div
+            className="relative overflow-hidden rounded-3xl px-8 py-16 md:px-16"
+            style={{
+              background: `linear-gradient(135deg, ${GOLD} 0%, ${GOLD_SOFT} 100%)`,
+              boxShadow: "0 30px 60px -20px rgba(8,43,91,0.35)",
+            }}
+          >
+            <FileText className="pointer-events-none absolute -right-6 -top-6 h-40 w-40 rotate-12" style={{ color: "rgba(8,43,91,0.12)" }} />
             <div className="relative max-w-2xl">
-              <h2 className="text-3xl md:text-4xl" style={{ ...fontDisplay, fontWeight: 600 }}>
+              <h2 className="text-3xl md:text-4xl" style={{ ...fontDisplay, fontWeight: 600, color: NAVY }}>
                 Don't let the window close on your objection
               </h2>
-              <p className="mt-4 leading-relaxed text-slate-900/80">
+              <p className="mt-4 leading-relaxed" style={{ color: "rgba(8,43,91,0.82)" }}>
                 Send us the application number and journal issue — we'll tell you within
                 one business day whether you have grounds, and exactly how many days are
                 left to file.
               </p>
               <div className="mt-8 flex flex-wrap gap-4">
                 <a
-                  href="mailto:hello@vantageip.example"
-                  className="inline-flex items-center gap-2 rounded-full bg-slate-950 px-6 py-3 text-sm font-semibold text-amber-400 transition-colors hover:bg-slate-800"
+                  href="mailto:hello@perceptivebrains.example"
+                  className="inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-semibold transition-colors"
+                  style={{ background: NAVY, color: GOLD_SOFT }}
+                  onMouseEnter={(e) => (e.currentTarget.style.background = ROYAL)}
+                  onMouseLeave={(e) => (e.currentTarget.style.background = NAVY)}
                 >
                   <Send className="h-4 w-4" /> Start a free case review
                 </a>
                 <a
                   href="#timeline"
-                  className="inline-flex items-center gap-2 rounded-full border border-slate-950/30 px-6 py-3 text-sm font-semibold text-slate-950 transition-colors hover:border-slate-950/60"
+                  className="inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-semibold transition-colors"
+                  style={{ border: `1px solid rgba(8,43,91,0.35)`, color: NAVY }}
+                  onMouseEnter={(e) => (e.currentTarget.style.borderColor = "rgba(8,43,91,0.7)")}
+                  onMouseLeave={(e) => (e.currentTarget.style.borderColor = "rgba(8,43,91,0.35)")}
                 >
                   Re-check the timeline <ChevronDown className="h-4 w-4" />
                 </a>
