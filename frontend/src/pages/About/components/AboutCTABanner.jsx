@@ -1,5 +1,6 @@
 import React from "react";
 import { ArrowRight } from "lucide-react";
+import { Link } from "react-router-dom";
 import Reveal from "./Reveal";
 
 export default function AboutCTABanner() {
@@ -22,8 +23,8 @@ export default function AboutCTABanner() {
           Book a free consultation with our team and get a clear, actionable path forward for your patent,
           trademark, or copyright.
         </p>
-        <a
-          href="/contact"
+        <Link
+          to="/contact"
           className="group mt-7 inline-flex items-center justify-center gap-2 rounded-xl bg-white px-7 py-3.5 text-sm font-semibold text-[#0B1F3D] shadow-lg shadow-black/20 transition-all hover:-translate-y-0.5 hover:shadow-xl"
         >
           Get your free consultation
