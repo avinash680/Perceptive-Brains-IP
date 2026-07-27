@@ -4,7 +4,6 @@ import Home from "../pages/home/Home";
 import About from "../pages/about/About";
 import Service from "../pages/service/Service";
 import Industries from "../pages/industry/Industry";
-import Blog from "../pages/blog/Blog";
 import Resource from "../pages/resource/Resource";
 import Contact from "../pages/contact/Contact";
 import WebServices from "../pages/webservices/WebServices";
@@ -35,7 +34,6 @@ export default function AppRoutes() {
         <Route path="services" element={<Service />} />
         <Route path="contact" element={<Contact />} />
         <Route path="industry" element={<Industries />} />
-        <Route path="blog" element={<Blog />} />
         <Route path="resource" element={<Resource />} />
 
         <Route path="services/patent-search" element={<PatentSearch />} />
