@@ -29,7 +29,7 @@ export default function AboutCTABanner() {
         >
           Get your free consultation
           <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
-        </a>
+        </Link>
         <p className="mt-4 text-xs tracking-wide text-[#E7C873]/70">RESPONSE WITHIN 1 BUSINESS DAY</p>
       </Reveal>
     </section>
