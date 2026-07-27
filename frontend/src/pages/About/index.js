@@ -1,0 +1,10 @@
+export { default as AboutHero } from "./components/AboutHero";
+export { default as AboutWhoWeAre } from "./components/AboutWhoWeAre";
+export { default as AboutHowItWorksSection } from "./components/AboutHowItWorksSection";
+export { default as AboutWhyChooseUs } from "./components/AboutWhyChooseUs";
+export { default as AboutMissionVision } from "./components/AboutMissionVision";
+export { default as AboutProcess } from "./components/AboutProcess";
+export { default as AboutAchievements } from "./components/AboutAchievements";
+export { default as AboutTestimonials } from "./components/AboutTestimonials";
+export { default as AboutTeam } from "./components/AboutTeam";
+export { default as AboutCTABanner } from "./components/AboutCTABanner";
