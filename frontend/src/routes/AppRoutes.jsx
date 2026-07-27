@@ -1,24 +1,33 @@
+
+
+
 import { Routes, Route } from "react-router-dom";
 import MainLayout from "../layouts/MainLayout.jsx";
-import Home from "../pages/home/Home.jsx";
-import About from "../pages/about/About.jsx";
-import Service from "../pages/service/Service.jsx";
-import Industries from "../pages/industry/Industry.jsx";
-import Resource from "../pages/resource/Resource.jsx";
-import Contact from "../pages/contact/Contact.jsx";
-import WebServices from "../pages/webservices/WebServices.jsx";
-import UxUiToolkit from "../pages/webservices/UxUiToolkit.jsx";
-import PatentSearch from "../pages/service/Patent/PatentSearch.jsx";
-import PatentDraftingFiling from "../pages/service/Patent/PatentDraftingFiling.jsx";
-import PatentProsecution from "../pages/service/Patent/PatentProsecution.jsx";
-import PatentProcess from "../pages/service/Patent/PatentProcess.jsx";
-import TrademarkRegistration from "../pages/service/Trademark/TrademarkRegistration.jsx";
-import TrademarkOpposition from "../pages/service/Trademark/TrademarkOpposition.jsx";
-import TrademarkRenewal from "../pages/service/Trademark/TrademarkRenewal.jsx";
-import BrandProtection from "../pages/service/Trademark/BrandProtection.jsx";
-import CopyrightRegistration from "../pages/service/CopyrightDesign/CopyrightRegistration.jsx";
-import DesignRegistration from "../pages/service/CopyrightDesign/DesignRegistration.jsx";
-import DesignVsPatent from "../pages/service/CopyrightDesign/DesignVsPatent.jsx";
+
+import Home from "../pages/Home/Home.jsx";
+import About from "../pages/About/About.jsx";
+import Service from "../pages/Service/Service.jsx";
+import Industries from "../pages/Industry/Industry.jsx";
+import Resource from "../pages/Resource/Resource.jsx";
+import Contact from "../pages/Contact/Contact.jsx";
+
+import WebServices from "../pages/WebServices/WebServices.jsx";
+import UxUiToolkit from "../pages/WebServices/UxUiToolkit.jsx";
+
+import PatentSearch from "../pages/Service/Patent/PatentSearch.jsx";
+import PatentDraftingFiling from "../pages/Service/Patent/PatentDraftingFiling.jsx";
+import PatentProsecution from "../pages/Service/Patent/PatentProsecution.jsx";
+import PatentProcess from "../pages/Service/Patent/PatentProcess.jsx";
+
+import TrademarkRegistration from "../pages/Service/Trademark/TrademarkRegistration.jsx";
+import TrademarkOpposition from "../pages/Service/Trademark/TrademarkOpposition.jsx";
+import TrademarkRenewal from "../pages/Service/Trademark/TrademarkRenewal.jsx";
+import BrandProtection from "../pages/Service/Trademark/BrandProtection.jsx";
+
+import CopyrightRegistration from "../pages/Service/CopyrightDesign/CopyrightRegistration.jsx";
+import DesignRegistration from "../pages/Service/CopyrightDesign/DesignRegistration.jsx";
+import DesignVsPatent from "../pages/Service/CopyrightDesign/DesignVsPatent.jsx";
+
 import IPPortfolio from "../pages/BusinessStrategy/IPPortfolio.jsx";
 import IPValuation from "../pages/BusinessStrategy/IPValuation.jsx";
 import StartupServices from "../pages/BusinessStrategy/StartupServices.jsx";
