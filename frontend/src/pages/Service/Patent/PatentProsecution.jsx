@@ -232,7 +232,6 @@ export default function PatentProsecution() {
       <section className="py-20" style={{ background: "var(--white)" }}>
         <div className="max-w-6xl mx-auto px-6 sm:px-10">
           <Reveal className="max-w-2xl mb-10">
-            <SectionEyebrow>EXHIBIT A</SectionEyebrow>
             <h2 className="display text-3xl sm:text-4xl font-medium" style={{ color: "var(--navy)" }}>
               What the examiner tests
             </h2>
@@ -266,7 +265,6 @@ export default function PatentProsecution() {
       <section id="docket" className="py-20 relative overflow-hidden" style={{ background: "linear-gradient(180deg, var(--navy), var(--royal))" }}>
         <div className="max-w-6xl mx-auto px-6 sm:px-10 relative">
           <Reveal className="max-w-2xl mb-4">
-            <SectionEyebrow onDark>EXHIBIT B</SectionEyebrow>
             <h2 className="display text-3xl sm:text-4xl font-medium mb-3" style={{ color: "#FFFFFF" }}>
               The docket: action and response
             </h2>
@@ -320,7 +318,6 @@ export default function PatentProsecution() {
       <section className="py-20" style={{ background: "var(--mist)" }}>
         <div className="max-w-6xl mx-auto px-6 sm:px-10">
           <Reveal className="max-w-2xl mb-10">
-            <SectionEyebrow>EXHIBIT C</SectionEyebrow>
             <h2 className="display text-3xl sm:text-4xl font-medium" style={{ color: "var(--navy)" }}>
               After the grant
             </h2>
@@ -349,7 +346,6 @@ export default function PatentProsecution() {
       <section id="services" className="py-20" style={{ background: "var(--white)" }}>
         <div className="max-w-6xl mx-auto px-6 sm:px-10">
           <Reveal className="max-w-2xl mb-10">
-            <SectionEyebrow>EXHIBIT D</SectionEyebrow>
             <h2 className="display text-3xl sm:text-4xl font-medium" style={{ color: "var(--navy)" }}>
               Our prosecution services
             </h2>
