@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import {
   BookOpen, Music2, Code2, ShieldCheck, Scale, FileCheck2,
   Clock3, Landmark, Fingerprint, Tag, CircleCheck, Sparkles,
@@ -133,13 +134,13 @@ export default function CopyrightRegistration() {
               of it, and a much shorter path to damages if it's infringed.
             </p>
             <div className="mt-9 flex gap-4 flex-wrap items-center">
-              <a
-                href="#certificate"
+              <Link
+                to="/services/copyright-registration#certificate"
                 className="cr-font-body text-sm font-semibold px-6 py-3.5 rounded-full inline-flex items-center gap-2 bg-gradient-to-r from-[#C69A32] to-[#E8CD86] text-[#082E63] shadow-[0_10px_30px_-8px_rgba(198,154,50,0.7)] hover:scale-[1.04] transition-transform duration-300"
               >
                 Build Your Certificate
                 <Sparkles size={15} />
-              </a>
+              </Link>
               <span className="cr-font-body text-xs tracking-wide text-white/50">4 work categories, one form</span>
             </div>
           </div>

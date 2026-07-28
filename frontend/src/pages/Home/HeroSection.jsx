@@ -144,9 +144,12 @@ export default function Hero() {
                   <ArrowRight size={16} className="transition-transform duration-200 group-hover:translate-x-0.5" />
                 </button>
               </Link>
-              <button className="rounded-full border border-gray-600 px-6 py-3 text-sm font-medium text-white transition-colors duration-200 hover:border-white hover:bg-white hover:text-black">
+              <Link
+                to="/services"
+                className="rounded-full border border-gray-600 px-6 py-3 text-sm font-medium text-white transition-colors duration-200 hover:border-white hover:bg-white hover:text-black"
+              >
                 Explore services
-              </button>
+              </Link>
             </div>
 
             <div className="mt-10 flex flex-wrap gap-x-6 gap-y-3 border-t border-white/10 pt-6">

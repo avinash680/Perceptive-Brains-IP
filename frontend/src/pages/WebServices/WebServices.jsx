@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   LayoutGrid,
@@ -174,19 +175,21 @@ export default function WebServices() {
             <span className="h-px w-10 bg-gradient-to-l from-transparent to-[#C69A32]/50" />
           </div>
 
-          <motion.button
+          <motion.div
             whileHover={{ scale: 1.035, y: -2 }}
             whileTap={{ scale: 0.98 }}
             transition={{ type: "spring", stiffness: 300, damping: 20 }}
             className="group relative mt-8 inline-flex items-center gap-2 overflow-hidden rounded-full bg-gradient-to-r from-[#C69A32] to-[#a97f24] px-8 py-3.5 text-sm font-semibold uppercase tracking-[0.15em] text-[#082E63] shadow-[0_8px_30px_rgba(198,154,50,0.35)] transition-shadow hover:shadow-[0_10px_40px_rgba(198,154,50,0.5)]"
           >
-            <span className="relative z-10">Start Your Project</span>
+            <Link to="/contact" className="relative z-10 inline-flex items-center gap-2">
+              <span>Start Your Project</span>
             <ArrowRight
-              className="relative z-10 h-4 w-4 transition-transform duration-300 group-hover:translate-x-1"
+              className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1"
               strokeWidth={2.5}
             />
+            </Link>
             <span className="absolute inset-0 -translate-x-full bg-white/30 transition-transform duration-500 group-hover:translate-x-0" />
-          </motion.button>
+          </motion.div>
         </motion.div>
 
         {/* Feature Grid */}

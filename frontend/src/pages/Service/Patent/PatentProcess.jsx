@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import {
   FileSignature, Mail, Clock3, Users, CreditCard, Send, Inbox,
   FileText, MessageCircle, CheckCircle2, ArrowUpRight, ExternalLink,
@@ -137,13 +138,13 @@ export default function PatentProcessLexgin() {
               product or process offering a new technical solution. Below is
               the exact sequence Lexgin follows to file yours in India.
             </p>
-            <a
-              href="#flow"
+            <Link
+              to="/services/patent-process#flow"
               className="mono text-xs px-5 py-3 tracking-wide inline-block mt-8"
               style={{ background: "var(--stamp)", color: "var(--paper)" }}
             >
               WALK THE FLOW →
-            </a>
+            </Link>
           </div>
 
           <div className="pf-seal-wrap shrink-0">

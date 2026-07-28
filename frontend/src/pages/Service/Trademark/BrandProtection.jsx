@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import { Link } from "react-router-dom";
 import {
   Radar,
   ShieldAlert,
@@ -209,20 +210,20 @@ export default function BrandProtection() {
                 spending down that name in the market.
               </p>
               <div className="mt-9 flex flex-wrap gap-4">
-                <a
-                  href="#toolkit"
+                <Link
+                  to="/services/brand-protection#toolkit"
                   className="bp-btn-gold inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-semibold"
                   style={{ background: "linear-gradient(135deg, var(--gold-light), var(--gold))", color: "var(--navy)" }}
                 >
                   <ShieldAlert className="h-4 w-4" /> Request a brand audit
-                </a>
-                <a
-                  href="#process"
+                </Link>
+                <Link
+                  to="/services/brand-protection#process"
                   className="bp-btn-ghost inline-flex items-center gap-2 rounded-full border px-6 py-3 text-sm font-semibold"
                   style={{ borderColor: "rgba(255,255,255,0.35)", color: "#FFFFFF" }}
                 >
                   See how monitoring works
-                </a>
+                </Link>
               </div>
             </Reveal>
 
@@ -434,13 +435,13 @@ export default function BrandProtection() {
                 >
                   <Send className="h-4 w-4" /> Request my free audit
                 </a>
-                <a
-                  href="#process"
+                <Link
+                  to="/services/brand-protection#process"
                   className="bp-btn-ghost inline-flex items-center gap-2 rounded-full border px-6 py-3 text-sm font-semibold"
                   style={{ borderColor: "rgba(255,255,255,0.3)", color: "#FFFFFF" }}
                 >
                   Revisit the process
-                </a>
+                </Link>
               </div>
               <div className="mt-8 flex items-center gap-2">
                 <CheckCircle2 size={13} style={{ color: "var(--gold-light)" }} />

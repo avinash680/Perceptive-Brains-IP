@@ -8,6 +8,7 @@ import {
   ArrowRight,
   Check,
 } from "lucide-react";
+import { Link } from "react-router-dom";
 
 /**
  * StartupIPServices — luxury navy / gold restyle
@@ -136,13 +137,13 @@ export default function StartupIPServices() {
               line of code through the first international patent portfolio.
             </p>
             <div className="mt-8 flex flex-wrap items-center gap-4">
-              <button className="group inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[#C69A32] to-[#a97e22] px-6 py-3 text-sm font-semibold text-[#051B3F] shadow-[0_0_30px_-6px_rgba(198,154,50,0.55)] transition-transform hover:scale-[1.03]">
+              <Link to="/contact" className="group inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[#C69A32] to-[#a97e22] px-6 py-3 text-sm font-semibold text-[#051B3F] shadow-[0_0_30px_-6px_rgba(198,154,50,0.55)] transition-transform hover:scale-[1.03]">
                 Book a consult
                 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-              </button>
-              <button className="rounded-full border border-white/15 px-6 py-3 text-sm font-medium text-white/80 backdrop-blur-sm transition-colors hover:border-[#C69A32]/50 hover:text-white">
+              </Link>
+              <Link to="/contact" className="rounded-full border border-white/15 px-6 py-3 text-sm font-medium text-white/80 backdrop-blur-sm transition-colors hover:border-[#C69A32]/50 hover:text-white">
                 See how pricing works
-              </button>
+              </Link>
             </div>
           </div>
         </div>
@@ -235,7 +236,8 @@ export default function StartupIPServices() {
                         </li>
                       ))}
                     </ul>
-                    <button
+                    <Link
+                      to="/contact"
                       className={`mt-auto inline-flex items-center justify-center gap-1.5 rounded-full px-4 py-2.5 text-xs font-semibold transition-all ${
                         s.highlighted
                           ? "bg-gradient-to-r from-[#C69A32] to-[#a97e22] text-[#051B3F] shadow-[0_0_20px_-6px_rgba(198,154,50,0.6)] hover:scale-[1.03]"
@@ -244,7 +246,7 @@ export default function StartupIPServices() {
                     >
                       Start here
                       <ArrowRight className="h-3.5 w-3.5" />
-                    </button>
+                    </Link>
                   </div>
                 </div>
               ))}
@@ -264,10 +266,10 @@ export default function StartupIPServices() {
               first.
             </p>
           </div>
-          <button className="relative inline-flex shrink-0 items-center gap-2 rounded-full bg-gradient-to-r from-[#C69A32] to-[#a97e22] px-6 py-3 text-sm font-semibold text-[#051B3F] shadow-[0_0_30px_-6px_rgba(198,154,50,0.6)] transition-transform hover:scale-[1.03]">
+          <Link to="/contact" className="relative inline-flex shrink-0 items-center gap-2 rounded-full bg-gradient-to-r from-[#C69A32] to-[#a97e22] px-6 py-3 text-sm font-semibold text-[#051B3F] shadow-[0_0_30px_-6px_rgba(198,154,50,0.6)] transition-transform hover:scale-[1.03]">
             Book a consult
             <ArrowRight className="h-4 w-4" />
-          </button>
+          </Link>
         </div>
       </div>
     </div>

@@ -45,12 +45,12 @@ export default function AboutHero({ stats }) {
               Book a filing consultation
               <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
             </Link>
-            <a
-              href="#how-it-works"
+            <Link
+              to="/about#how-it-works"
               className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/25 px-6 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-white/10"
             >
               See how it works
-            </a>
+            </Link>
           </div>
 
           <div className="mt-10 grid grid-cols-2 gap-6 border-t border-white/15 pt-8 sm:grid-cols-4">

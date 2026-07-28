@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import { Link } from "react-router-dom";
 import {
   Gavel, FileSearch, ScrollText, MessagesSquare, RefreshCcw, Archive,
   LayoutGrid, CalendarClock, ShieldCheck, Users, ArrowRight, Scale,
@@ -195,20 +196,20 @@ export default function PatentProsecution() {
                 the record of that exchange — and how to answer it.
               </p>
               <div className="mt-8 flex gap-3 flex-wrap">
-                <a
-                  href="#docket"
+                <Link
+                  to="/services/patent-prosecution#docket"
                   className="pp-btn-gold inline-flex items-center gap-2 px-6 py-3.5 rounded-full font-semibold text-sm"
                   style={{ background: "linear-gradient(135deg, var(--gold-light), var(--gold))", color: "var(--navy)" }}
                 >
                   Open the Docket <ArrowRight size={16} />
-                </a>
-                <a
-                  href="#services"
+                </Link>
+                <Link
+                  to="/services/patent-prosecution#services"
                   className="pp-btn-ghost inline-flex items-center gap-2 px-6 py-3.5 rounded-full font-medium text-sm border"
                   style={{ borderColor: "rgba(255,255,255,0.35)", color: "#FFFFFF" }}
                 >
                   Our Services
-                </a>
+                </Link>
               </div>
             </Reveal>
 

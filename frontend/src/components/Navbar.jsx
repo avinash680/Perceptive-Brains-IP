@@ -9,10 +9,8 @@ const serviceGroups = [
     blurb: "Protect the invention itself.",
     items: [
       { name: "Patent search services", path: "/services/patent-search" },
-      { name: "Patentability search", path: "/services/patentability-search" },
       { name: "Patent drafting and filing", path: "/services/patent-drafting-filing" },
       { name: "Patent prosecution", path: "/services/patent-prosecution" },
-      { name: "International filing (PCT)", path: "/services/pct-filing" },
     ],
   },
   {

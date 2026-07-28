@@ -46,15 +46,14 @@ export default function AppRoutes() {
         <Route path="resource" element={<Resource />} />
 
         <Route path="services/patent-search" element={<PatentSearch />} />
-        <Route path="services/patentability-search" element={<PatentSearch />} />
         <Route path="services/patent-drafting-filing" element={<PatentDraftingFiling />} />
         <Route path="services/patent-prosecution" element={<PatentProsecution />} />
-        <Route path="services/pct-filing" element={<PatentProcess />} />
         <Route path="service/patent-search" element={<PatentSearch />} />
-        <Route path="service/patentability-search" element={<PatentSearch />} />
         <Route path="service/patent-drafting-filing" element={<PatentDraftingFiling />} />
         <Route path="service/patent-prosecution" element={<PatentProsecution />} />
-        <Route path="service/pct-filing" element={<PatentProcess />} />
+        <Route path="patent-search" element={<PatentSearch />} />
+        <Route path="patent-drafting-filing" element={<PatentDraftingFiling />} />
+        <Route path="patent-prosecution" element={<PatentProsecution />} />
 
         <Route path="services/trademark-registration" element={<TrademarkRegistration />} />
         <Route path="services/trademark-opposition" element={<TrademarkOpposition />} />
@@ -64,6 +63,10 @@ export default function AppRoutes() {
         <Route path="service/trademark-opposition" element={<TrademarkOpposition />} />
         <Route path="service/trademark-renewal" element={<TrademarkRenewal />} />
         <Route path="service/brand-protection" element={<BrandProtection />} />
+        <Route path="trademark-registration" element={<TrademarkRegistration />} />
+        <Route path="trademark-opposition" element={<TrademarkOpposition />} />
+        <Route path="trademark-renewal" element={<TrademarkRenewal />} />
+        <Route path="brand-protection" element={<BrandProtection />} />
 
         <Route path="services/copyright-registration" element={<CopyrightRegistration />} />
         <Route path="services/industrial-design" element={<DesignRegistration />} />

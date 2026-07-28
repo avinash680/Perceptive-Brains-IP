@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import { Link } from "react-router-dom";
 import {
   Scale,
   ShieldAlert,
@@ -298,17 +299,17 @@ export default function TrademarkOpposition() {
                 gone for good.
               </p>
               <div className="mt-9 flex flex-wrap gap-4">
-                <a
-                  href="#consult"
+                <Link
+                  to="/services/trademark-opposition#consult"
                   className="inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-semibold transition-colors"
                   style={{ background: GOLD, color: NAVY }}
                   onMouseEnter={(e) => (e.currentTarget.style.background = GOLD_SOFT)}
                   onMouseLeave={(e) => (e.currentTarget.style.background = GOLD)}
                 >
                   File an opposition <ArrowRight className="h-4 w-4" />
-                </a>
-                <a
-                  href="#timeline"
+                </Link>
+                <Link
+                  to="/services/trademark-opposition#timeline"
                   className="inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-semibold transition-colors"
                   style={{ border: `1px solid ${GOLD}`, color: GOLD_SOFT }}
                   onMouseEnter={(e) => {
@@ -321,7 +322,7 @@ export default function TrademarkOpposition() {
                   }}
                 >
                   See the full timeline
-                </a>
+                </Link>
               </div>
             </Reveal>
 
@@ -646,15 +647,15 @@ export default function TrademarkOpposition() {
                 >
                   <Send className="h-4 w-4" /> Start a free case review
                 </a>
-                <a
-                  href="#timeline"
+                <Link
+                  to="/services/trademark-opposition#timeline"
                   className="inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-semibold transition-colors"
                   style={{ border: `1px solid rgba(8,43,91,0.35)`, color: NAVY }}
                   onMouseEnter={(e) => (e.currentTarget.style.borderColor = "rgba(8,43,91,0.7)")}
                   onMouseLeave={(e) => (e.currentTarget.style.borderColor = "rgba(8,43,91,0.35)")}
                 >
                   Re-check the timeline <ChevronDown className="h-4 w-4" />
-                </a>
+                </Link>
               </div>
             </div>
           </div>

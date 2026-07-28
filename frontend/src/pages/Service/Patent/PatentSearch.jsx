@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import { Link } from "react-router-dom";
 import {
   Search, ShieldCheck, Scale, Globe2, Users, TrendingUp, FileSearch,
   Layers, Target, Award, CheckCircle2, ChevronDown, Phone, Mail,
@@ -311,21 +312,21 @@ export default function PatentSearchServicesLuxury() {
               defensible path to protection.
             </p>
             <div className="mt-9 flex flex-wrap items-center gap-4">
-              <a
-                href="#contact"
+              <Link
+                to="/services/patent-search#contact"
                 className="pl-btn-gold inline-flex items-center gap-2 px-7 py-3.5 rounded-full font-semibold text-sm"
                 style={{ background: "linear-gradient(135deg, var(--gold-light), var(--gold))", color: "var(--navy)" }}
               >
                 Get Free Consultation
                 <ArrowRight size={16} />
-              </a>
-              <a
-                href="#search-types"
+              </Link>
+              <Link
+                to="/services/patent-search#search-types"
                 className="pl-btn-ghost inline-flex items-center gap-2 px-7 py-3.5 rounded-full font-medium text-sm border"
                 style={{ borderColor: "rgba(255,255,255,0.35)", color: "#FFFFFF" }}
               >
                 Explore search types
-              </a>
+              </Link>
             </div>
 
             <div className="mt-12 flex items-center gap-8 flex-wrap">
@@ -415,9 +416,9 @@ export default function PatentSearchServicesLuxury() {
                   </div>
                   <h3 className="display text-lg font-medium mb-2" style={{ color: "#FFFFFF" }}>{s.title}</h3>
                   <p className="text-sm leading-relaxed flex-1" style={{ color: "rgba(255,255,255,0.68)" }}>{s.text}</p>
-                  <a href="#contact" className="mt-6 inline-flex items-center gap-1.5 text-sm font-semibold" style={{ color: "var(--gold-light)" }}>
+                  <Link to="/services/patent-search#contact" className="mt-6 inline-flex items-center gap-1.5 text-sm font-semibold" style={{ color: "var(--gold-light)" }}>
                     Learn more <ArrowRight size={14} />
-                  </a>
+                  </Link>
                 </div>
               </Reveal>
             ))}
@@ -556,22 +557,22 @@ export default function PatentSearchServicesLuxury() {
                 in the entire process, and the one most likely to save your claim.
               </p>
               <div className="mt-10 flex flex-wrap justify-center gap-4">
-                <a
-                  href="tel:+919971117009"
+                <Link
+                  to="/contact"
                   className="pl-btn-gold inline-flex items-center gap-2 px-7 py-3.5 rounded-full font-semibold text-sm"
                   style={{ background: "linear-gradient(135deg, var(--gold-light), var(--gold))", color: "var(--navy)" }}
                 >
                   <Phone size={16} />
                   Schedule Consultation
-                </a>
-                <a
-                  href="mailto:info@perceptivebrainsip.com"
+                </Link>
+                <Link
+                  to="/contact"
                   className="pl-btn-ghost inline-flex items-center gap-2 px-7 py-3.5 rounded-full font-medium text-sm border"
                   style={{ borderColor: "rgba(255,255,255,0.35)", color: "#FFFFFF" }}
                 >
                   <Mail size={16} />
                   Contact Our Experts
-                </a>
+                </Link>
               </div>
               <div className="mt-10 flex justify-center items-center gap-2">
                 <CheckCircle2 size={14} style={{ color: "var(--gold-light)" }} />

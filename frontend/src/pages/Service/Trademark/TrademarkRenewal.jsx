@@ -244,17 +244,17 @@ export default function TrademarkRenewal() {
                 grace period, removal, and an uphill restoration.
               </p>
               <div className="mt-9 flex flex-wrap gap-4">
-                <a
-                  href="#windows"
+                <Link
+                  to="/services/trademark-renewal#windows"
                   className="inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-semibold transition-colors"
                   style={{ background: GOLD, color: NAVY }}
                   onMouseEnter={(e) => (e.currentTarget.style.background = GOLD_SOFT)}
                   onMouseLeave={(e) => (e.currentTarget.style.background = GOLD)}
                 >
                   <RefreshCw className="h-4 w-4" /> Check my renewal window
-                </a>
-                <a
-                  href="#checklist"
+                </Link>
+                <Link
+                  to="/services/trademark-renewal#checklist"
                   className="inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-semibold transition-colors"
                   style={{ border: `1px solid ${GOLD}`, color: GOLD_SOFT }}
                   onMouseEnter={(e) => {
@@ -267,7 +267,7 @@ export default function TrademarkRenewal() {
                   }}
                 >
                   What do I need to file?
-                </a>
+                </Link>
               </div>
             </Reveal>
 
@@ -551,15 +551,15 @@ export default function TrademarkRenewal() {
                 >
                   <Send className="h-4 w-4" /> Set up renewal tracking
                 </a>
-                <a
-                  href="#windows"
+                <Link
+                  to="/services/trademark-renewal#windows"
                   className="inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-semibold transition-colors"
                   style={{ border: `1px solid rgba(8,43,91,0.35)`, color: NAVY }}
                   onMouseEnter={(e) => (e.currentTarget.style.borderColor = "rgba(8,43,91,0.7)")}
                   onMouseLeave={(e) => (e.currentTarget.style.borderColor = "rgba(8,43,91,0.35)")}
                 >
                   Review the four states
-                </a>
+                </Link>
               </div>
             </div>
           </div>

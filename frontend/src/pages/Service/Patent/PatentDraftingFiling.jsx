@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { Link } from "react-router-dom";
 import { Stamp, ScrollText, Scale, FileSearch, Gavel, BookMarked, ChevronRight, CircleCheck, CircleAlert, Handshake } from "lucide-react";
 import IPFeeTable from "./patentFees";
 
@@ -269,12 +270,12 @@ export default function PatentDraftingPerceptiveBrains() {
               cost to file in India, and where drafters go wrong.
             </p>
             <div className="mt-8 flex gap-3 flex-wrap">
-              <a href="#claims" className="pl-cta pl-cta-foil mono text-xs px-5 py-3 tracking-wide rounded-sm font-medium">
+              <Link to="/services/patent-drafting-filing#claims" className="pl-cta pl-cta-foil mono text-xs px-5 py-3 tracking-wide rounded-sm font-medium">
                 READ THE CLAIMS →
-              </a>
-              <a href="#fees" className="pl-cta mono text-xs px-5 py-3 tracking-wide border rounded-sm" style={{ borderColor: "rgba(217,185,120,0.4)", color: "#FBF6E9" }}>
+              </Link>
+              <Link to="/services/patent-drafting-filing#fees" className="pl-cta mono text-xs px-5 py-3 tracking-wide border rounded-sm" style={{ borderColor: "rgba(217,185,120,0.4)", color: "#FBF6E9" }}>
                 VIEW FEE SCHEDULE
-              </a>
+              </Link>
             </div>
           </div>
         </div>
@@ -453,12 +454,12 @@ export default function PatentDraftingPerceptiveBrains() {
               </p>
             </div>
             <div className="flex gap-3 flex-wrap self-center relative">
-              <a href="#" className="pl-cta pl-cta-foil mono text-xs px-5 py-3 tracking-wide rounded-sm inline-flex items-center gap-2 font-medium">
+              <Link to="/contact" className="pl-cta pl-cta-foil mono text-xs px-5 py-3 tracking-wide rounded-sm inline-flex items-center gap-2 font-medium">
                 <Handshake size={14} /> SCHEDULE A CONSULTATION
-              </a>
-              <a href="#claims" className="pl-cta mono text-xs px-5 py-3 tracking-wide border rounded-sm inline-flex items-center gap-2" style={{ borderColor: "rgba(217,185,120,0.4)", color: "#FBF6E9" }}>
+              </Link>
+              <Link to="/services/patent-drafting-filing#claims" className="pl-cta mono text-xs px-5 py-3 tracking-wide border rounded-sm inline-flex items-center gap-2" style={{ borderColor: "rgba(217,185,120,0.4)", color: "#FBF6E9" }}>
                 REVIEW EXHIBIT A <ChevronRight size={14} />
-              </a>
+              </Link>
             </div>
           </div>
         </Reveal>

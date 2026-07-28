@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import {
   FileText,
   Shield,
@@ -23,6 +24,7 @@ const services = [
       "End-to-end provisional, complete and PCT patent drafting, filing and prosecution across 150+ jurisdictions.",
     tag: "Flagship",
     image: patentProsecutionImg,
+    path: "/services/patent-drafting-filing",
   },
   {
     icon: PenTool,
@@ -31,6 +33,7 @@ const services = [
     description:
       "Protect the visual and aesthetic features of your products under the Designs Act and Hague.",
     image: designRegistrationImg,
+    path: "/services/industrial-design",
   },
   {
     icon: Shield,
@@ -39,6 +42,7 @@ const services = [
     description:
       "Brand clearance search, filing, opposition handling and global trademark portfolio management.",
     image: trademarkRegistrationImg,
+    path: "/services/trademark-registration",
   },
   {
     icon: Copyright,
@@ -47,6 +51,7 @@ const services = [
     description:
       "Protection for literary, artistic, musical, software and audio-visual works.",
     image: softwareImg,
+    path: "/services/copyright-registration",
   },
   {
     icon: Scale,
@@ -55,6 +60,7 @@ const services = [
     description:
       "Strategic representation in infringement suits, oppositions and enforcement before courts and IPAB.",
     image: ipLitigationImg,
+    path: "/services/ip-litigation-support",
   },
   {
     icon: Lightbulb,
@@ -63,6 +69,7 @@ const services = [
     description:
       "Patent landscaping, freedom-to-operate, valuation and portfolio strategy aligned to business goals.",
     image: ipStrategyImg,
+    path: "/services/ip-portfolio-management",
   },
 ];
 
@@ -122,8 +129,10 @@ export default function Services() {
             const Icon = service.icon;
 
             return (
-              <div
+              <Link
                 key={index}
+                to={service.path}
+                aria-label={`Learn more about ${service.title}`}
                 className="group relative overflow-hidden rounded-[2rem] bg-white/95 ring-1 ring-[#DEDACB] transition-all duration-500 hover:-translate-y-1.5 hover:ring-[#10182E] hover:shadow-[0_30px_60px_-20px_rgba(16,24,46,0.45)]"
               >
                 {/* Registration corner marks — draw in on hover, like a document
@@ -183,7 +192,7 @@ export default function Services() {
                 {/* Quiet gilt edge along the base — the premium finish,
                     a hairline rather than a call-to-action */}
                 <div className="h-[3px] w-full bg-gradient-to-r from-[#C89B3C]/20 via-[#C89B3C] to-[#C89B3C]/20 scale-x-0 origin-left transition-transform duration-500 group-hover:scale-x-100 rounded-b-[2rem]" />
-              </div>
+              </Link>
             );
           })}
         </div>

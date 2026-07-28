@@ -13,8 +13,8 @@ import logo from "../assets/PBIP.png"; // <-- Update the path if needed
 
 const companyLinks = [
   { name: "About Us", path: "/about" },
-  { name: "Our Team", path: "/team" },
-  { name: "Prosecution", path: "/prosecution" },
+  { name: "Our Team", path: "/#team" },
+  { name: "Prosecution", path: "/services/patent-prosecution" },
   { name: "Contact", path: "/contact" },
 ];
 

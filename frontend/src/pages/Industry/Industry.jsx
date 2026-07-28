@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import aiImg from "../../assets/AI.jpg";
 import softwareImg from "../../assets/software.webp";
@@ -138,10 +139,10 @@ const Industries = () => {
                 <p className="leading-7 text-gray-600">{item.description}</p>
 
                 {/* Button */}
-                <button className="mt-8 flex items-center gap-2 font-semibold text-amber-600 transition-all duration-300 group-hover:gap-3">
+                <Link to="/contact" className="mt-8 flex items-center gap-2 font-semibold text-amber-600 transition-all duration-300 group-hover:gap-3">
                   Learn More
                   <ArrowRight size={18} />
-                </button>
+                </Link>
               </div>
             </div>
           ))}
