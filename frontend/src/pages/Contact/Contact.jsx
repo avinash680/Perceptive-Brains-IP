@@ -268,7 +268,7 @@ export default function ConsultationCompact() {
                         icon={User}
                         label="FULL NAME"
                         type="text"
-                        placeholder="Jordan Ellis"
+                        placeholder="Amit Patel"
                         value={form.name}
                         onChange={update("name")}
                         disabled={loading}
@@ -277,7 +277,7 @@ export default function ConsultationCompact() {
                         icon={Phone}
                         label="PHONE"
                         type="tel"
-                        placeholder="+1 (555) 000-0000"
+                        placeholder="+91 98765 43210"
                         value={form.phone}
                         onChange={update("phone")}
                         disabled={loading}
@@ -288,7 +288,7 @@ export default function ConsultationCompact() {
                       icon={Mail}
                       label="EMAIL ADDRESS"
                       type="email"
-                      placeholder="jordan@company.com"
+                      placeholder="amit@company.in"
                       value={form.email}
                       onChange={update("email")}
                       disabled={loading}
@@ -305,7 +305,7 @@ export default function ConsultationCompact() {
                           disabled={loading}
                           className="svc w-full bg-transparent pr-6 text-[13px] text-stone-800 focus:outline-none"
                         >
-                          <option value="">Select a service</option>
+                          <option value="">Select an IP service</option>
                           {serviceOptions.map((s) => (
                             <option key={s} value={s}>
                               {s}
@@ -330,7 +330,7 @@ export default function ConsultationCompact() {
                         />
                         <textarea
                           rows="2"
-                          placeholder="Tell us about your project..."
+                          placeholder="Describe your IP need, e.g. patent filing, trademark or copyright support"
                           value={form.message}
                           onChange={update("message")}
                           disabled={loading}

@@ -254,7 +254,7 @@ export default function Hero() {
                             onChange={update("service")}
                             className="svc w-full bg-transparent pr-6 text-[13px] text-stone-800 focus:outline-none"
                           >
-                            <option value="">Select a service</option>
+                            <option value="">Select an IP service</option>
                             {SERVICE_OPTIONS.map((s) => (
                               <option key={s} value={s}>
                                 {s}
@@ -279,7 +279,7 @@ export default function Hero() {
                           />
                           <textarea
                             rows="2"
-                            placeholder="Tell us about your project..."
+                            placeholder="Describe your IP need, e.g. patent filing, trademark registration or copyright protection"
                             value={form.message}
                             onChange={update("message")}
                             className="w-full resize-none bg-transparent text-[13px] text-stone-800 placeholder-stone-400 focus:outline-none"

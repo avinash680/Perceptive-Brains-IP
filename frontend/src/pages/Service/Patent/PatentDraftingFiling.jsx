@@ -284,7 +284,6 @@ export default function PatentDraftingPerceptiveBrains() {
       {/* CLAIM FAMILY — signature element */}
       <section id="claims" className="border-t" style={{ borderColor: "var(--rule)", position: "relative", zIndex: 1 }}>
         <Reveal className="max-w-5xl mx-auto px-6 py-16">
-          <Eyebrow>EXHIBIT A</Eyebrow>
           <h2 className="display text-2xl sm:text-3xl font-medium mb-3" style={{ color: "var(--navy)" }}>How a claim family reads</h2>
           <p className="max-w-xl text-sm leading-relaxed mb-10" style={{ color: "var(--slate)" }}>
             An independent claim stands alone and defines the broadest scope.
@@ -377,7 +376,6 @@ export default function PatentDraftingPerceptiveBrains() {
       {/* MISTAKES */}
       <section className="border-t" style={{ borderColor: "var(--rule)", background: "var(--ivory-dim)", position: "relative", zIndex: 1 }}>
         <Reveal className="max-w-5xl mx-auto px-6 py-16">
-          <Eyebrow>EXHIBIT B</Eyebrow>
           <h2 className="display text-2xl sm:text-3xl font-medium mb-8" style={{ color: "var(--navy)" }}>Where claims fail</h2>
           <div className="space-y-5">
             {mistakes.map((m) => (
@@ -404,7 +402,6 @@ export default function PatentDraftingPerceptiveBrains() {
       {/* FEE LEDGER */}
       <section id="fees" className="border-t" style={{ borderColor: "var(--rule)", position: "relative", zIndex: 1 }}>
         <Reveal className="max-w-5xl mx-auto px-6 py-16">
-          <Eyebrow>EXHIBIT C — INDIA</Eyebrow>
           <h2 className="display text-2xl sm:text-3xl font-medium mb-8" style={{ color: "var(--navy)" }}>Fee schedule, by entity</h2>
           <IPFeeTable />
         </Reveal>
@@ -413,7 +410,6 @@ export default function PatentDraftingPerceptiveBrains() {
       {/* PROCESS — real sequence, numbers earn their place */}
       <section className="border-t" style={{ borderColor: "var(--rule)", background: "var(--ivory-dim)", position: "relative", zIndex: 1 }}>
         <Reveal className="max-w-5xl mx-auto px-6 py-16">
-          <Eyebrow>EXHIBIT D</Eyebrow>
           <h2 className="display text-2xl sm:text-3xl font-medium mb-2" style={{ color: "var(--navy)" }}>The filing sequence</h2>
           <Divider />
           <div className="mt-8">
@@ -458,7 +454,7 @@ export default function PatentDraftingPerceptiveBrains() {
                 <Handshake size={14} /> SCHEDULE A CONSULTATION
               </Link>
               <Link to="/services/patent-drafting-filing#claims" className="pl-cta mono text-xs px-5 py-3 tracking-wide border rounded-sm inline-flex items-center gap-2" style={{ borderColor: "rgba(217,185,120,0.4)", color: "#FBF6E9" }}>
-                REVIEW EXHIBIT A <ChevronRight size={14} />
+                REVIEW CLAIMS <ChevronRight size={14} />
               </Link>
             </div>
           </div>
