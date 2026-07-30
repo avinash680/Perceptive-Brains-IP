@@ -210,7 +210,7 @@ export const team = [
     title: "Registered Patent Agent (IN/PA 3339)",
     department: "Patents & Innovation",
     qualification: "Ph.D. | Registered Indian Patent Agent",
-    experience: "15+ Years",
+    experience: "7+Years",
     expertise: [
       "Patent Drafting",
       "Patent Prosecution",

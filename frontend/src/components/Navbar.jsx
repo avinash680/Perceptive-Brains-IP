@@ -304,7 +304,7 @@ export default function Navbar() {
       {/* Mobile drawer — slides in from the right over a dimmed backdrop,
           the modern app-drawer pattern rather than a full-bleed panel. */}
       <div
-        className={`fixed inset-0 z-40 lg:hidden transition-opacity duration-300 ${
+        className={`fixed inset-0 z-60 lg:hidden transition-opacity duration-300 ${
           isOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
         }`}
       >
@@ -314,7 +314,7 @@ export default function Navbar() {
         />
 
         <div
-          className={`absolute right-0 top-0 bottom-0 w-[86%] max-w-sm bg-[var(--brand-surface)] shadow-2xl overflow-y-auto transition-transform duration-300 ease-out ${
+          className={`absolute right-0 top-0 bottom-0 w-[86%] max-w-sm bg-[var(--brand-surface)] shadow-2xl overflow-y-auto transition-transform duration-300 ease-out z-60 ${
             isOpen ? "translate-x-0" : "translate-x-full"
           }`}
         >
