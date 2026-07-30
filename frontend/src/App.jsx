@@ -7,19 +7,21 @@ function ScrollToHash() {
   const { hash, pathname } = useLocation();
 
   useLayoutEffect(() => {
-    if (!hash) return;
+    if (hash) {
+      const id = hash.replace("#", "");
+      const scrollToElement = () => {
+        const element = document.getElementById(id);
+        if (element) {
+          element.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      };
 
-    const id = hash.replace("#", "");
-    const scrollToElement = () => {
-      const element = document.getElementById(id);
-      if (element) {
-        element.scrollIntoView({ behavior: "smooth", block: "start" });
-      }
-    };
+      scrollToElement();
+      const timeout = window.setTimeout(scrollToElement, 100);
+      return () => window.clearTimeout(timeout);
+    }
 
-    scrollToElement();
-    const timeout = window.setTimeout(scrollToElement, 100);
-    return () => window.clearTimeout(timeout);
+    window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
   }, [hash, pathname]);
 
   return null;

@@ -6,9 +6,11 @@ import { Star, Quote, ChevronLeft, ChevronRight } from "lucide-react";
  * A single auto-swiping "spotlight" testimonial on a colorful mesh-gradient
  * canvas, driven by a circular avatar rail + directional slide transitions.
  *
- * - Progress bar: one persistent, inset, fully-rounded pill (never a flush
- *   edge-to-edge bar), so it never clashes with the card's rounded corners
- *   and never flashes/disappears at the moment of a swipe.
+ * - Progress bar: one persistent, edge-to-edge line pinned to the very
+ *   bottom of the card (clipped by the card's own rounded corners via
+ *   overflow-hidden), so it reads as the card's own base filling up rather
+ *   than a floating pill. It never flashes/disappears at the moment of a
+ *   swipe — it just resets and refills.
  * - Flash: the instant the bar completes (or a manual swipe happens), a
  *   quick white pulse flashes across the card as the next testimonial
  *   slides in — a clear "beat" between one card and the next.
@@ -60,7 +62,7 @@ const TESTIMONIALS = [
   },
 ];
 
-const AUTO_ADVANCE_MS = 6000;
+const AUTO_ADVANCE_MS = 5000;
 
 function StarRow({ rating, size = 14 }) {
   return (
@@ -234,7 +236,7 @@ export default function TestimonialSpotlight() {
             boxShadow: "0 8px 30px -18px rgba(20,18,31,0.35)",
           }}
         >
-          <div className="flex -space-x-2">
+          <div className="kfKfflex -space-x-2">
             {TESTIMONIALS.map((t) => (
               <div
                 key={t.name}
@@ -273,9 +275,10 @@ export default function TestimonialSpotlight() {
           </button>
 
           {/* card: rounded-[28px] + overflow-hidden keeps every child — blobs,
-              flash pulse, quote — clipped cleanly to the rounded shape */}
+              flash pulse, quote, and the bottom progress line — clipped
+              cleanly to the rounded shape */}
           <div
-            className="relative w-full rounded-[28px] px-6 sm:px-14 pt-12 sm:pt-16 pb-10 sm:pb-12 overflow-hidden"
+            className="relative w-full rounded-[28px] px-6 sm:px-14 pt-12 sm:pt-16 pb-12 sm:pb-14 overflow-hidden"
             style={{
               backgroundColor: "rgba(255,255,255,0.66)",
               border: "1px solid rgba(20,18,31,0.08)",
@@ -322,23 +325,24 @@ export default function TestimonialSpotlight() {
               </div>
             </div>
 
-            {/* progress bar: inset rounded pill, one persistent node.
-                Never flush with the card edge, so it never clips against
-                the card's own rounded corners, and never remounts/flashes
-                at the moment of a swipe — it just refills. */}
-            <div className="relative mt-10 mx-auto w-24 sm:w-28">
+            {/* progress bar: one persistent, full-bleed line pinned to the
+                very bottom edge of the card. The rounded corners clip it
+                automatically (overflow-hidden on the card), so it reads as
+                the card's own base filling up rather than a floating pill.
+                It never remounts or flashes at the moment of a swipe — it
+                just resets to 0 and refills. */}
+            <div
+              className="absolute left-0 right-0 bottom-0 h-[4px]"
+              style={{ backgroundColor: "rgba(20,18,31,0.08)" }}
+            >
               <div
-                className="h-[3px] w-full rounded-full overflow-hidden"
-                style={{ backgroundColor: "rgba(20,18,31,0.1)" }}
-              >
-                <div
-                  className="h-full rounded-full"
-                  style={{
-                    width: `${progress}%`,
-                    background: "linear-gradient(90deg, #6C4DFF, #FF6B4A)",
-                  }}
-                />
-              </div>
+                className="h-full"
+                style={{
+                  width: `${progress}%`,
+                  background: "linear-gradient(90deg, #6C4DFF, #FF6B4A)",
+                  transition: swipeId === 0 && progress === 0 ? "none" : undefined,
+                }}
+              />
             </div>
           </div>
 
