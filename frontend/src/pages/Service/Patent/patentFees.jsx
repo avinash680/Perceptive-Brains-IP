@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
+import pbipLogo from "../../../assets/PBIP.png";
 import {
   ChevronDown,
   Check,
@@ -16,6 +17,7 @@ import {
   Sparkles,
   Globe2,
   PackagePlus,
+  Package,
 } from "lucide-react";
 
 /* ============================================================================
@@ -414,7 +416,7 @@ function CategoryTabs({ active, setActive, selectedIds }) {
 }
 
 /* ------------------------------ Toolbar (search + sort) --------------------- */
-function Toolbar({ query, setQuery, sortKey, setSortKey, onAddAll, addAllLabel, allSelected }) {
+function Toolbar({ query, setQuery, sortKey, setSortKey, onAddAll, allSelected }) {
   const sortOptions = [
     { key: "default", label: "Default order" },
     { key: "fee-asc", label: "Total fee: low to high" },
@@ -467,7 +469,7 @@ function Toolbar({ query, setQuery, sortKey, setSortKey, onAddAll, addAllLabel, 
         }`}
       >
         {allSelected ? <Check className="h-3.5 w-3.5" /> : <PackagePlus className="h-3.5 w-3.5" />}
-        {allSelected ? "All added" : addAllLabel}
+        All add services
       </button>
     </div>
   );
@@ -605,7 +607,7 @@ function FeeBreakdownChart({ govtTotal, profTotal }) {
 }
 
 /* ------------------------------ Summary panel -------------------------------- */
-function SummaryPanel({ selectedServices, onClear, onDownload, onRemove }) {
+function SummaryPanel({ selectedServices, packageCategories, onClear, onDownload, onRemove }) {
   const govtTotal = selectedServices.reduce((sum, s) => sum + feeNumber(s.govtFee), 0);
   const profTotal = selectedServices.reduce((sum, s) => sum + s.professionalFee, 0);
   const grandTotal = govtTotal + profTotal;
@@ -653,6 +655,36 @@ function SummaryPanel({ selectedServices, onClear, onDownload, onRemove }) {
             </AnimatePresence>
           </div>
 
+          {packageCategories.length > 0 && (
+            <div className="space-y-2 mb-4">
+              <AnimatePresence initial={false}>
+                {packageCategories.map((cat) => (
+                  <motion.div
+                    key={cat.id}
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 6 }}
+                    transition={{ duration: 0.2 }}
+                    className="flex items-center justify-between gap-2 rounded-lg bg-[#E8C468]/10 border border-[#E8C468]/25 px-3 py-2.5"
+                  >
+                    <div className="flex items-center gap-2 min-w-0">
+                      <Package className="h-3.5 w-3.5 text-[#E8C468] shrink-0" />
+                      <div className="min-w-0">
+                        <div className="text-xs font-semibold text-[#E8C468] truncate">
+                          Consolidated package · {cat.label}
+                        </div>
+                        <div className="text-[10px] text-white/50">{cat.packageLabel}</div>
+                      </div>
+                    </div>
+                    <span className="font-mono text-sm font-semibold text-[#E8C468] shrink-0">
+                      {inr(cat.package)}
+                    </span>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            </div>
+          )}
+
           <div className="border-t border-white/10 pt-4 space-y-2">
             <div className="flex justify-between text-xs text-white/55">
               <span>Government fees</span>
@@ -676,6 +708,11 @@ function SummaryPanel({ selectedServices, onClear, onDownload, onRemove }) {
             {hasVariableFees && (
               <p className="text-[11px] text-white/40 pt-1">
                 Some selected services have variable government fees — final total may differ.
+              </p>
+            )}
+            {packageCategories.length > 0 && (
+              <p className="text-[11px] text-white/40 pt-1">
+                Consolidated package price(s) above are shown for reference and are not added into the itemized total.
               </p>
             )}
           </div>
@@ -730,6 +767,7 @@ export default function IPFeeCalculator() {
   };
 
   const allInCategorySelected = SERVICES[category].every((s) => selectedIds[s.id]);
+  const categorySelectedCount = categoryCount(category, selectedIds);
 
   const addAllInCategory = () => {
     setSelectedIds((prev) => {
@@ -746,6 +784,13 @@ export default function IPFeeCalculator() {
     const all = Object.values(SERVICES).flat();
     return all.filter((s) => selectedIds[s.id]);
   }, [selectedIds]);
+
+  // Categories where every service is selected AND a consolidated package price exists —
+  // this is what now feeds the summary panel and the downloaded quote.
+  const packageCategories = useMemo(
+    () => CATEGORIES.filter((cat) => cat.package && SERVICES[cat.id].every((s) => selectedIds[s.id])),
+    [selectedIds]
+  );
 
   const clearAll = () => setSelectedIds({});
 
@@ -765,33 +810,84 @@ export default function IPFeeCalculator() {
       .join("");
     const govtTotal = selectedServices.reduce((sum, s) => sum + feeNumber(s.govtFee), 0);
     const profTotal = selectedServices.reduce((sum, s) => sum + s.professionalFee, 0);
-    win.document.write(`
+
+    const packageRows = packageCategories
+      .map(
+        (cat) => `<tr>
+          <td colspan="3">Consolidated package — ${cat.label} (${cat.packageLabel})</td>
+          <td>${inr(cat.package)}</td>
+        </tr>`
+      )
+      .join("");
+
+    const quoteHtml = `
       <html><head><title>Perceptive Brains IP — Fee Estimate</title>
       <style>
-        body { font-family: -apple-system, Inter, sans-serif; color:#0B2545; padding:40px; }
-        h1 { font-size:22px; margin-bottom:2px; }
-        p.sub { color:#5b6b82; font-size:12px; margin-top:0; margin-bottom:24px; }
+        body { font-family: -apple-system, Inter, sans-serif; color:#0B2545; padding:40px; position:relative; }
+        .watermark {
+          position:fixed;
+          inset:0;
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          pointer-events:none;
+          z-index:0;
+          opacity:0.08;
+        }
+        .watermark img {
+          width:min(48vw, 280px);
+          max-width:280px;
+          object-fit:contain;
+          filter: grayscale(100%);
+        }
+        .header-row { position:relative; z-index:1; display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:16px; }
+        .header-logo { width:56px; height:56px; object-fit:contain; opacity:0.9; }
+        h1, p.sub, table, .tot, .note { position:relative; z-index:1; }
+        h1 { font-size:22px; margin:0; }
+        p.sub { color:#5b6b82; font-size:12px; margin:4px 0 0; }
         table { width:100%; border-collapse:collapse; font-size:13px; }
         th, td { text-align:left; padding:10px 12px; border-bottom:1px solid #e5e9ef; }
         th { text-transform:uppercase; font-size:10px; letter-spacing:0.06em; color:#5b6b82; }
+        tr.package td { background:#fbf3de; font-weight:600; color:#8a6d1a; }
         .tot { margin-top:20px; font-size:14px; }
         .tot strong { color:#0B2545; }
+        .note { margin-top:6px; font-size:11px; color:#8a97a8; }
+        @media print {
+          body { padding:24px; }
+          .watermark { opacity:0.08; }
+        }
       </style></head>
       <body>
-        <h1>Perceptive Brains IP</h1>
-        <p class="sub">Fee Estimate &middot; Generated ${new Date().toLocaleDateString()}</p>
+        <div class="watermark">
+          <img src="${pbipLogo}" alt="Perceptive Brains IP watermark" />
+        </div>
+        <div class="header-row">
+          <div>
+            <h1>Perceptive Brains IP</h1>
+            <p class="sub">Fee Estimate &middot; Generated ${new Date().toLocaleDateString()}</p>
+          </div>
+          <img class="header-logo" src="${pbipLogo}" alt="Perceptive Brains IP logo" />
+        </div>
         <table>
           <thead><tr><th>Service</th><th>Govt. Fee</th><th>Professional Fee</th><th>Total</th></tr></thead>
-          <tbody>${rows}</tbody>
+          <tbody>${rows}${packageRows ? `<tr><td colspan="4" style="border:none;height:6px;"></td></tr>` : ""}${packageRows.replace(/<tr>/g, '<tr class="package">')}</tbody>
         </table>
         <p class="tot">Government fees: <strong>${inr(govtTotal)}</strong></p>
         <p class="tot">Professional fees: <strong>${inr(profTotal)}</strong></p>
-        <p class="tot">Estimated total: <strong>${inr(govtTotal + profTotal)}</strong></p>
+        <p class="tot">Estimated total (itemized): <strong>${inr(govtTotal + profTotal)}</strong></p>
+        ${packageCategories.length > 0 ? `<p class="note">Consolidated package prices are shown above for comparison and are separate from the itemized total.</p>` : ""}
       </body></html>
-    `);
+    `;
+
+    win.document.write(quoteHtml);
     win.document.close();
-    win.focus();
-    setTimeout(() => win.print(), 300);
+
+    const logoImage = new Image();
+    logoImage.onload = () => {
+      win.focus();
+      setTimeout(() => win.print(), 400);
+    };
+    logoImage.src = pbipLogo;
   };
 
   return (
@@ -822,7 +918,6 @@ export default function IPFeeCalculator() {
             setSortKey={setSortKey}
             onAddAll={addAllInCategory}
             allSelected={allInCategorySelected}
-            addAllLabel={`Add all ${catMeta.label.toLowerCase()}`}
           />
 
           <div className="hidden md:grid grid-cols-[28px_2fr_1fr_1fr_1fr_0.8fr_36px] gap-2 px-5 py-3.5 text-[11px] font-semibold uppercase tracking-wider text-[#0B2545]/50 border-b border-black/5">
@@ -855,18 +950,33 @@ export default function IPFeeCalculator() {
             </motion.div>
           </AnimatePresence>
 
-          {catMeta.package && (
+          {categorySelectedCount > 0 && (
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-5 py-4 bg-[#0B2545]/[0.03] border-t border-black/5">
-              <div className="text-xs text-[#0B2545]/60">
-                <span className="font-semibold text-[#0B2545]">Consolidated package</span> ({catMeta.packageLabel})
-              </div>
-              <div className="font-mono text-lg font-semibold text-[#0B2545]">{inr(catMeta.package)}</div>
+              {catMeta.package && allInCategorySelected ? (
+                <>
+                  <div className="text-xs text-[#0B2545]/60">
+                    <span className="font-semibold text-[#0B2545]">Consolidated package</span> ({catMeta.packageLabel})
+                  </div>
+                  <div className="font-mono text-lg font-semibold text-[#0B2545]">{inr(catMeta.package)}</div>
+                </>
+              ) : (
+                <>
+                  <div className="text-xs text-[#0B2545]/60">
+                    <span className="font-semibold text-[#0B2545]">Selected total</span> ({categorySelectedCount} service
+                    {categorySelectedCount > 1 ? "s" : ""} in {catMeta.label})
+                  </div>
+                  <div className="font-mono text-lg font-semibold text-[#0B2545]">
+                    {inr(categoryTotal(category, selectedIds))}
+                  </div>
+                </>
+              )}
             </div>
           )}
         </div>
 
         <SummaryPanel
           selectedServices={selectedServices}
+          packageCategories={packageCategories}
           onClear={clearAll}
           onDownload={downloadQuote}
           onRemove={remove}
