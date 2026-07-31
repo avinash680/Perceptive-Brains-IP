@@ -12,8 +12,20 @@ import {
   Mail,
   MessageSquare,
   ChevronRight,
+  AlertTriangle,
+  Loader2,
 } from "lucide-react";
 import heroImage from "../../assets/hero.jpg";
+
+const getApiUrl = () => {
+  const configuredUrl = import.meta.env.VITE_API_URL;
+  const host = window.location.hostname;
+  const isLocalHost = ["localhost", "127.0.0.1", "::1"].includes(host);
+  const baseUrl = configuredUrl || (isLocalHost ? "http://localhost:8080" : "https://perceptive-brains-ip.onrender.com");
+  return `${baseUrl.replace(/\/$/, "")}/consultation`;
+};
+
+const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
 /**
  * Hero, right column swapped from the certificate/stats card to a live
@@ -74,16 +86,60 @@ export default function Hero() {
     message: "",
   });
   const [submitted, setSubmitted] = useState(false);
-  const [appNo] = useState(
-    () => `IN/PMIP/${Math.floor(1000 + Math.random() * 9000)}`
-  );
+  const [appNo, setAppNo] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
 
-  const update = (key) => (e) =>
+  const update = (key) => (e) => {
     setForm((f) => ({ ...f, [key]: e.target.value }));
+    if (errorMsg) setErrorMsg("");
+  };
 
-  const handleSubmit = () => {
-    if (!form.name || !form.email) return;
-    setSubmitted(true);
+  const handleSubmit = async () => {
+    if (!form.name.trim()) {
+      setErrorMsg("Please enter your full name.");
+      return;
+    }
+    if (!form.email.trim() || !isValidEmail(form.email)) {
+      setErrorMsg("Please enter a valid email address.");
+      return;
+    }
+
+    setLoading(true);
+    setErrorMsg("");
+
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(() => controller.abort(), 15000);
+
+    try {
+      const res = await fetch(getApiUrl(), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+        signal: controller.signal,
+      });
+
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        throw new Error(data?.error || "Something went wrong. Please try again.");
+      }
+
+      setAppNo(data.appNo);
+      setSubmitted(true);
+    } catch (err) {
+      const message =
+        err.name === "AbortError"
+          ? "The server took too long to respond. Please try again in a moment."
+          : err instanceof TypeError
+          ? "Could not reach the server. Please check your connection and try again."
+          : err.message || "Something went wrong. Please try again.";
+      setErrorMsg(message);
+      setSubmitted(false);
+    } finally {
+      window.clearTimeout(timeoutId);
+      setLoading(false);
+    }
   };
 
   const heroStyle = {
@@ -215,6 +271,13 @@ export default function Hero() {
                       Application for consultation
                     </h3>
 
+                    {errorMsg && (
+                      <div className="fade-in mb-3 flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2.5">
+                        <AlertTriangle size={14} className="mt-0.5 shrink-0 text-red-500" />
+                        <p className="text-[12.5px] leading-snug text-red-700">{errorMsg}</p>
+                      </div>
+                    )}
+
                     <div className="space-y-3">
                       <div className="grid grid-cols-2 gap-3">
                         <Field
@@ -291,11 +354,20 @@ export default function Hero() {
                     <button
                       type="button"
                       onClick={handleSubmit}
-                      disabled={!form.name || !form.email}
+                      disabled={!form.name || !form.email || loading}
                       className="mt-4 flex w-full items-center justify-center gap-2 rounded-lg bg-amber-600 py-3 text-[13.5px] font-semibold tracking-wide text-slate-950 shadow-lg shadow-amber-600/20 transition-all duration-150 hover:bg-amber-500 hover:shadow-amber-600/30 disabled:cursor-not-allowed disabled:bg-stone-200 disabled:text-stone-400 disabled:shadow-none"
                     >
-                      Submit application
-                      <ArrowRight size={15} />
+                      {loading ? (
+                        <>
+                          <Loader2 size={15} className="spin" />
+                          Submitting...
+                        </>
+                      ) : (
+                        <>
+                          Submit application
+                          <ArrowRight size={15} />
+                        </>
+                      )}
                     </button>
                   </>
                 )}
