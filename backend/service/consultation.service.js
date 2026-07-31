@@ -61,10 +61,12 @@ async function sendUserEmail({ appNo, name, email }) {
     "— Perceptive Brains Team",
   ].join("\n");
 
+  const fromEmail = config.smtp.from || config.smtp.user;
+
   return transporter.sendMail({
-    from: `Perceptive Brains IP <${config.smtp.from}>`,
+    from: `Perceptive Brains IP <${fromEmail}>`,
     to: email,
-    replyTo: config.smtp.from,
+    replyTo: fromEmail,
     subject: `We've received your application — ${appNo}`,
     text: textBody,
     html: `

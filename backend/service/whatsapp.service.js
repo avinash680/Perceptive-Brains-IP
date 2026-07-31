@@ -61,11 +61,12 @@ async function sendUserWhatsapp({ appNo, name, phone }) {
 
 async function sendUserNotification({ appNo, name, email, phone }) {
   const failures = [];
+  let sentAny = false;
 
   if (email) {
     try {
       await sendUserEmail({ appNo, name, email });
-      return true;
+      sentAny = true;
     } catch (err) {
       failures.push({ type: "email", detail: err.message || String(err) });
     }
@@ -74,7 +75,7 @@ async function sendUserNotification({ appNo, name, email, phone }) {
   if (phone) {
     try {
       await sendUserWhatsapp({ appNo, name, phone });
-      return true;
+      sentAny = true;
     } catch (err) {
       failures.push({ type: "whatsapp", detail: err.message || String(err) });
     }
@@ -84,7 +85,7 @@ async function sendUserNotification({ appNo, name, email, phone }) {
     throw new Error(JSON.stringify(failures));
   }
 
-  return false;
+  return sentAny;
 }
 
 module.exports = { sendAdminWhatsapp, sendUserWhatsapp, sendUserNotification };
