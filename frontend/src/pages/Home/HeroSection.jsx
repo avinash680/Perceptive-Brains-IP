@@ -138,11 +138,7 @@ export default function Hero() {
       console.log('[hero] response', { status: res.status, duration: `${duration}ms`, body: data });
       setLastResponse({ status: res.status, duration, body: data });
 
-      const isSuccessResponse =
-        res.ok &&
-        ((typeof data === "object" && data !== null && data.success) ||
-          (typeof data === "string" && data.includes("success") && data.includes("true")) ||
-          (typeof data === "string" && data.includes("appNo")));
+      const isSuccessResponse = res.ok;
 
       if (!isSuccessResponse) {
         const errText = typeof data === "string" ? data : JSON.stringify(data);
