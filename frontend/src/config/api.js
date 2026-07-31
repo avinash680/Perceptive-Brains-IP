@@ -8,9 +8,18 @@ export function getApiBase() {
     }
   }
 
-  const host = typeof window !== "undefined" ? window.location.hostname : "localhost";
+  if (typeof window === "undefined") {
+    return "http://localhost:8080";
+  }
+
+  const host = window.location.hostname;
   const isLocalHost = ["localhost", "127.0.0.1", "::1"].includes(host);
-  return isLocalHost ? "http://localhost:8080" : "https://perceptive-brains-ip-1.onrender.com";
+  if (isLocalHost) {
+    return "http://localhost:8080";
+  }
+
+  // Use same origin in production by default.
+  return `${window.location.protocol}//${window.location.host}`;
 }
 
 export default getApiBase;
