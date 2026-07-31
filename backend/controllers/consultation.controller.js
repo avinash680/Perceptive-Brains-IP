@@ -1,5 +1,5 @@
-const { sendAdminEmail, sendUserEmail } = require("../service/consultation.service");
-const { sendAdminWhatsapp, sendUserWhatsapp } = require("../service/whatsapp.service");
+const { sendAdminEmail } = require("../service/consultation.service");
+const { sendAdminWhatsapp, sendUserNotification } = require("../service/whatsapp.service");
 
 function generateAppNo() {
   const year = new Date().getFullYear();
@@ -25,9 +25,8 @@ exports.submitConsultation = async (req, res) => {
 
     Promise.allSettled([
       sendAdminEmail(payload),
-      sendUserEmail(payload),
       sendAdminWhatsapp(payload),
-      sendUserWhatsapp(payload),
+      sendUserNotification(payload),
     ])
       .then((results) => {
         const failures = results
@@ -35,9 +34,8 @@ exports.submitConsultation = async (req, res) => {
             if (result.status === "rejected") {
               const errorMap = [
                 "admin-email",
-                "user-email",
                 "admin-whatsapp",
-                "user-whatsapp",
+                "user-notification",
               ];
               return {
                 error: errorMap[index],

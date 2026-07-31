@@ -52,10 +52,21 @@ async function sendAdminEmail({ appNo, name, email, phone, service, message }) {
 async function sendUserEmail({ appNo, name, email }) {
   const transporter = createTransporter();
 
+  const textBody = [
+    `Hi ${name},`,
+    "",
+    `Thanks for reaching out. Your application number is ${appNo}.`,
+    "A registered attorney will review your details and get back to you within 24 hours.",
+    "",
+    "— Perceptive Brains Team",
+  ].join("\n");
+
   return transporter.sendMail({
-    from: config.smtp.from,
+    from: `Perceptive Brains IP <${config.smtp.from}>`,
     to: email,
+    replyTo: config.smtp.from,
     subject: `We've received your application — ${appNo}`,
+    text: textBody,
     html: `
       <div style="font-family: Arial, sans-serif; font-size: 14px; color: #1c1c1c;">
         <p>Hi ${name},</p>
