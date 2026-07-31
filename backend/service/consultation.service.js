@@ -28,12 +28,12 @@ async function sendAdminEmail({ appNo, name, email, phone, service, message }) {
 
   const fromEmail = config.smtp.from || config.smtp.user;
   const adminEmail = config.admin.email || fromEmail;
-
-  return transporter.sendMail({
-    from: `Perceptive Brains IP <${fromEmail}>`,
-    to: adminEmail,
-    subject: `New Consultation Request — ${appNo}`,
-    html: `
+  try {
+    const info = await transporter.sendMail({
+      from: `Perceptive Brains IP <${fromEmail}>`,
+      to: adminEmail,
+      subject: `New Consultation Request — ${appNo}`,
+      html: `
       <div style="font-family: Arial, sans-serif; font-size: 14px; color: #1c1c1c;">
         <h2 style="margin-bottom: 4px;">New Consultation Application</h2>
         <p style="color:#b45309; font-family: monospace;">Application No: ${appNo}</p>
@@ -46,7 +46,14 @@ async function sendAdminEmail({ appNo, name, email, phone, service, message }) {
         </table>
       </div>
     `,
-  });
+    });
+
+    console.info("[consultation] admin email sent:", { messageId: info.messageId, accepted: info.accepted, rejected: info.rejected });
+    return info;
+  } catch (err) {
+    console.error("[consultation] sendAdminEmail error:", err && err.message ? err.message : err);
+    throw err;
+  }
 }
 
 /**
@@ -66,13 +73,14 @@ async function sendUserEmail({ appNo, name, email }) {
 
   const fromEmail = config.smtp.from || config.smtp.user;
 
-  return transporter.sendMail({
-    from: `Perceptive Brains IP <${fromEmail}>`,
-    to: email,
-    replyTo: fromEmail,
-    subject: `We've received your application — ${appNo}`,
-    text: textBody,
-    html: `
+  try {
+    const info = await transporter.sendMail({
+      from: `Perceptive Brains IP <${fromEmail}>`,
+      to: email,
+      replyTo: fromEmail,
+      subject: `We've received your application — ${appNo}`,
+      text: textBody,
+      html: `
       <div style="font-family: Arial, sans-serif; font-size: 14px; color: #1c1c1c;">
         <p>Hi ${name},</p>
         <p>Thanks for reaching out. Your application number is <strong>${appNo}</strong>.</p>
@@ -80,7 +88,14 @@ async function sendUserEmail({ appNo, name, email }) {
         <p style="margin-top:24px; color:#666;">— Perceptive Brains Team</p>
       </div>
     `,
-  });
+    });
+
+    console.info("[consultation] user email sent:", { to: email, messageId: info.messageId, accepted: info.accepted, rejected: info.rejected });
+    return info;
+  } catch (err) {
+    console.error("[consultation] sendUserEmail error:", err && err.message ? err.message : err);
+    throw err;
+  }
 }
 
 module.exports = { sendAdminEmail, sendUserEmail };
