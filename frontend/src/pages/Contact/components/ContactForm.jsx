@@ -56,6 +56,8 @@ export default function ContactForm({ serviceOptions }) {
   };
 
   const handleSubmit = async () => {
+    if (loading) return;
+
     if (!form.name.trim()) {
       setErrorMsg("Please enter your full name.");
       return;
