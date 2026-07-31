@@ -10,7 +10,7 @@ function getNumericEnv(name, fallback) {
 }
 
 module.exports = {
-  port: getNumericEnv("PORT", 5000),
+  port: getNumericEnv("PORT", 8080),
   frontendOrigin: process.env.FRONTEND_ORIGIN || "*",
 
   admin: {

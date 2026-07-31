@@ -5,7 +5,14 @@ export function getApiBase() {
     return configuredUrl;
   }
 
-  return "http://localhost:5000";
+  if (typeof window !== "undefined") {
+    const host = window.location.hostname.toLowerCase();
+    if (host.includes("perceptive-brains-ip")) {
+      return "https://perceptive-brains-ip.onrender.com";
+    }
+  }
+
+  return "http://localhost:8080";
 }
 
 export default getApiBase;
