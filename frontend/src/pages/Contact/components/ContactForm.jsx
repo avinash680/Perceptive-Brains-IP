@@ -15,23 +15,9 @@ import {
 
 
 
-const getApiUrl = () => {
-  const configuredUrl = import.meta.env.VITE_API_URL?.trim();
-  let baseUrl = null;
+import { getApiBase } from "../../../config/api";
 
-  if (configuredUrl) {
-    try {
-      baseUrl = new URL(configuredUrl).origin;
-    } catch (err) {
-      baseUrl = null;
-    }
-  }
-
-  const host = window.location.hostname;
-  const isLocalHost = ["localhost", "127.0.0.1", "::1"].includes(host);
-  baseUrl = baseUrl || (isLocalHost ? "http://localhost:8080" : "https://perceptive-brains-ip.onrender.com");
-  return `${baseUrl.replace(/\/$/, "")}/consultation`;
-};
+const getApiUrl = () => `${getApiBase().replace(/\/$/, "")}/consultation`;
 
 const Field = ({ icon: Icon, label, ...props }) => (
   <label className="block">

@@ -84,6 +84,7 @@ export default function Navbar() {
   const isActive = useCallback(
     (path) => (path === "/" ? location.pathname === "/" : location.pathname.startsWith(path)),
     [location.pathname]
+    
   );
 
   // Subtle header compaction on scroll — gives depth without being loud
