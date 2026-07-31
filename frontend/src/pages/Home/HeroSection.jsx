@@ -99,6 +99,7 @@ export default function Hero() {
   const [appNo, setAppNo] = useState("");
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const [lastResponse, setLastResponse] = useState(null);
 
   const update = (key) => (e) => {
     setForm((f) => ({ ...f, [key]: e.target.value }));
@@ -131,6 +132,7 @@ export default function Hero() {
 
       console.log('[hero] submitting to', url, 'payload:', JSON.stringify(form));
 
+      const start = Date.now();
       const res = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -138,10 +140,21 @@ export default function Hero() {
         signal: controller.signal,
       });
 
-      const data = await res.json();
+      const duration = Date.now() - start;
+      const raw = await res.text();
+      let data = null;
+      try {
+        data = JSON.parse(raw);
+      } catch (e) {
+        data = raw;
+      }
 
-      if (!res.ok || !data.success) {
-        throw new Error(data?.error || "Something went wrong. Please try again.");
+      console.log('[hero] response', { status: res.status, duration: `${duration}ms`, body: data });
+      setLastResponse({ status: res.status, duration, body: data });
+
+      if (!res.ok || !(data && data.success)) {
+        const errText = typeof data === 'string' ? data : JSON.stringify(data);
+        throw new Error(data?.error || `Unexpected response (${res.status}): ${errText}`);
       }
 
       setAppNo(data.appNo);

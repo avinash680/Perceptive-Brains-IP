@@ -87,6 +87,7 @@ export default function ConsultationCompact() {
   const [appNo, setAppNo] = useState("");
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const [lastResponse, setLastResponse] = useState(null);
 
   const update = (key) => (e) => {
     setForm((prev) => ({ ...prev, [key]: e.target.value }));
@@ -123,6 +124,7 @@ export default function ConsultationCompact() {
       // Diagnostic log to help identify wrong endpoint in production
       console.log("[contact] submitting to", url, "payload:", JSON.stringify(form));
 
+      const start = Date.now();
       const res = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -130,16 +132,21 @@ export default function ConsultationCompact() {
         signal: controller.signal,
       });
 
-      // Backend reachable, but did it 4xx/5xx?
-      let data;
+      const duration = Date.now() - start;
+      const raw = await res.text();
+      let data = null;
       try {
-        data = await res.json();
-      } catch {
-        throw new Error("Unexpected response from server. Please try again.");
+        data = JSON.parse(raw);
+      } catch (e) {
+        data = raw;
       }
 
-      if (!res.ok || !data.success) {
-        throw new Error(data?.error || "Something went wrong. Please try again.");
+      console.log('[contact] response', { status: res.status, duration: `${duration}ms`, body: data });
+      setLastResponse({ status: res.status, duration, body: data });
+
+      if (!res.ok || !(data && data.success)) {
+        const errText = typeof data === 'string' ? data : JSON.stringify(data);
+        throw new Error(data?.error || `Unexpected response (${res.status}): ${errText}`);
       }
 
       // Only now — after a confirmed success from the backend — do we show the success screen.
@@ -291,6 +298,14 @@ export default function ConsultationCompact() {
                     <div className="fade-in mb-3 flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2.5">
                       <AlertTriangle size={14} className="mt-0.5 shrink-0 text-red-500" />
                       <p className="text-[12.5px] leading-snug text-red-700">{errorMsg}</p>
+                    </div>
+                  )}
+
+                  {lastResponse && (
+                    <div className="mb-3 rounded border border-slate-200 bg-slate-50 p-3 text-xs text-slate-700">
+                      <div className="mb-1 font-medium text-slate-800">Last response (debug)</div>
+                      <div>Status: {lastResponse.status} • Duration: {lastResponse.duration}ms</div>
+                      <pre className="mt-2 max-h-36 overflow-auto text-[11px]">{JSON.stringify(lastResponse.body, null, 2)}</pre>
                     </div>
                   )}
 
