@@ -23,38 +23,76 @@ function createTransporter() {
 /**
  * Notify the admin/firm that a new consultation request came in.
  */
+
+
+// async function sendAdminEmail({ appNo, name, email, phone, service, message }) {
+//   const transporter = createTransporter();
+
+//   const fromEmail = config.smtp.from || config.smtp.user;
+//   const adminEmail = config.admin.email || fromEmail;
+//   try {
+//     const info = await transporter.sendMail({
+//       from: `Perceptive Brains IP <${fromEmail}>`,
+//       to: adminEmail,
+//       subject: `New Consultation Request — ${appNo}`,
+//       html: `
+//       <div style="font-family: Arial, sans-serif; font-size: 14px; color: #1c1c1c;">
+//         <h2 style="margin-bottom: 4px;">New Consultation Application</h2>
+//         <p style="color:#b45309; font-family: monospace;">Application No: ${appNo}</p>
+//         <table cellpadding="6" style="border-collapse: collapse;">
+//           <tr><td><strong>Name</strong></td><td>${name}</td></tr>
+//           <tr><td><strong>Email</strong></td><td>${email}</td></tr>
+//           <tr><td><strong>Phone</strong></td><td>${phone || "-"}</td></tr>
+//           <tr><td><strong>Service</strong></td><td>${service || "-"}</td></tr>
+//           <tr><td><strong>Message</strong></td><td>${message || "-"}</td></tr>
+//         </table>
+//       </div>
+//     `,
+//     });
+
+//     console.info("[consultation] admin email sent:", { messageId: info.messageId, accepted: info.accepted, rejected: info.rejected });
+//     return info;
+//   } catch (err) {
+//     console.error("[consultation] sendAdminEmail error:", err && err.message ? err.message : err);
+//     throw err;
+//   }
+// }
 async function sendAdminEmail({ appNo, name, email, phone, service, message }) {
+  console.log("===== sendAdminEmail START =====");
+
+  console.log({
+    host: config.smtp.host,
+    port: config.smtp.port,
+    user: config.smtp.user,
+    from: config.smtp.from,
+    admin: config.admin.email,
+  });
+
   const transporter = createTransporter();
 
-  const fromEmail = config.smtp.from || config.smtp.user;
-  const adminEmail = config.admin.email || fromEmail;
   try {
+    await transporter.verify();
+    console.log("✅ SMTP VERIFIED");
+
     const info = await transporter.sendMail({
-      from: `Perceptive Brains IP <${fromEmail}>`,
-      to: adminEmail,
+      from: `Perceptive Brains IP <${config.smtp.from}>`,
+      to: config.admin.email,
       subject: `New Consultation Request — ${appNo}`,
-      html: `
-      <div style="font-family: Arial, sans-serif; font-size: 14px; color: #1c1c1c;">
-        <h2 style="margin-bottom: 4px;">New Consultation Application</h2>
-        <p style="color:#b45309; font-family: monospace;">Application No: ${appNo}</p>
-        <table cellpadding="6" style="border-collapse: collapse;">
-          <tr><td><strong>Name</strong></td><td>${name}</td></tr>
-          <tr><td><strong>Email</strong></td><td>${email}</td></tr>
-          <tr><td><strong>Phone</strong></td><td>${phone || "-"}</td></tr>
-          <tr><td><strong>Service</strong></td><td>${service || "-"}</td></tr>
-          <tr><td><strong>Message</strong></td><td>${message || "-"}</td></tr>
-        </table>
-      </div>
-    `,
+      html: `<h1>Test Email</h1>`,
     });
 
-    console.info("[consultation] admin email sent:", { messageId: info.messageId, accepted: info.accepted, rejected: info.rejected });
+    console.log("✅ EMAIL SENT", info);
+
     return info;
   } catch (err) {
-    console.error("[consultation] sendAdminEmail error:", err && err.message ? err.message : err);
+    console.error("❌ EMAIL ERROR", err);
     throw err;
   }
 }
+
+
+
+
 
 /**
  * Confirmation email sent back to the applicant.
@@ -96,6 +134,11 @@ async function sendUserEmail({ appNo, name, email }) {
     console.error("[consultation] sendUserEmail error:", err && err.message ? err.message : err);
     throw err;
   }
+
+
 }
+
+
+
 
 module.exports = { sendAdminEmail, sendUserEmail };
