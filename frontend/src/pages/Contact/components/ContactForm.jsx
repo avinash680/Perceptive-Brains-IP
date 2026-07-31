@@ -13,7 +13,13 @@ import {
     Stamp,
 } from "lucide-react";
 
-const API_URL = `${(import.meta.env.VITE_API_URL || (window.location.hostname === "localhost" ? "http://localhost:8080" : "https://perceptive-brains-ip.onrender.com")).replace(/\/$/, "")}/consultation`;
+const getApiUrl = () => {
+  const configuredUrl = import.meta.env.VITE_API_URL;
+  const host = window.location.hostname;
+  const isLocalHost = ["localhost", "127.0.0.1", "::1"].includes(host);
+  const baseUrl = configuredUrl || (isLocalHost ? "http://localhost:8080" : "https://perceptive-brains-ip.onrender.com");
+  return `${baseUrl.replace(/\/$/, "")}/consultation`;
+};
 
 const Field = ({ icon: Icon, label, ...props }) => (
   <label className="block">
@@ -63,11 +69,15 @@ export default function ContactForm({ serviceOptions }) {
     setLoading(true);
     setErrorMsg("");
 
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(() => controller.abort(), 15000);
+
     try {
-      const res = await fetch(API_URL, {
+      const res = await fetch(getApiUrl(), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
+        signal: controller.signal,
       });
 
       let data;
@@ -85,12 +95,15 @@ export default function ContactForm({ serviceOptions }) {
       setSubmitted(true);
     } catch (err) {
       const message =
-        err instanceof TypeError
-          ? "Could not reach the server. Please check your connection and try again."
-          : err.message || "Something went wrong. Please try again.";
+        err.name === "AbortError"
+          ? "The server took too long to respond. Please try again in a moment."
+          : err instanceof TypeError
+            ? "Could not reach the server. Please check your connection and try again."
+            : err.message || "Something went wrong. Please try again.";
       setErrorMsg(message);
       setSubmitted(false);
     } finally {
+      window.clearTimeout(timeoutId);
       setLoading(false);
     }
   };
