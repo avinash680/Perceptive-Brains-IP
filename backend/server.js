@@ -1,20 +1,21 @@
-const http = require('http');
-const app = require('./app');
-const config = require('./config/env');
+const http = require("http");
+const app = require("./app");
+const config = require("./config/env");
 
 const server = http.createServer(app);
-const host = '0.0.0.0';
+
+const host = "0.0.0.0";
 const preferredPort = Number(process.env.PORT || config.port || 3000);
 
 function startServer(port) {
-  server.once('error', (err) => {
-    if (err.code === 'EADDRINUSE' && port !== 0) {
+  server.once("error", (err) => {
+    if (err.code === "EADDRINUSE" && port !== 0) {
       console.warn(`Port ${port} is busy. Trying a free port...`);
       startServer(0);
       return;
     }
 
-    console.error('Server failed to start:', err);
+    console.error("Server failed to start:", err);
     process.exit(1);
   });
 

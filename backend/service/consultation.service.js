@@ -58,34 +58,41 @@ function createTransporter() {
 //   }
 // }
 async function sendAdminEmail({ appNo, name, email, phone, service, message }) {
-  console.log("===== sendAdminEmail START =====");
-
-  console.log({
-    host: config.smtp.host,
-    port: config.smtp.port,
-    user: config.smtp.user,
-    from: config.smtp.from,
-    admin: config.admin.email,
-  });
-
   const transporter = createTransporter();
 
-  try {
-    await transporter.verify();
-    console.log("✅ SMTP VERIFIED");
+  const fromEmail = config.smtp.from || config.smtp.user;
+  const adminEmail = config.admin.email || fromEmail;
 
+  try {
     const info = await transporter.sendMail({
-      from: `Perceptive Brains IP <${config.smtp.from}>`,
-      to: config.admin.email,
+      from: `Perceptive Brains IP <${fromEmail}>`,
+      to: adminEmail,
       subject: `New Consultation Request — ${appNo}`,
-      html: `<h1>Test Email</h1>`,
+      html: `
+      <div style="font-family: Arial, sans-serif; font-size: 14px; color: #1c1c1c;">
+        <h2 style="margin-bottom: 4px;">New Consultation Application</h2>
+        <p style="color:#b45309; font-family: monospace;">Application No: ${appNo}</p>
+        <table cellpadding="6" style="border-collapse: collapse;">
+          <tr><td><strong>Name</strong></td><td>${name}</td></tr>
+          <tr><td><strong>Email</strong></td><td>${email}</td></tr>
+          <tr><td><strong>Phone</strong></td><td>${phone || "-"}</td></tr>
+          <tr><td><strong>Service</strong></td><td>${service || "-"}</td></tr>
+          <tr><td><strong>Message</strong></td><td>${message || "-"}</td></tr>
+        </table>
+      </div>
+    `,
     });
 
-    console.log("✅ EMAIL SENT", info);
+   console.info("[consultation] admin email sent:", {
+  messageId: info.messageId,
+  accepted: info.accepted,
+  rejected: info.rejected,
+  response: info.response,
+});
 
     return info;
   } catch (err) {
-    console.error("❌ EMAIL ERROR", err);
+    console.error("[consultation] sendAdminEmail error:", err && err.message ? err.message : err);
     throw err;
   }
 }
@@ -128,7 +135,12 @@ async function sendUserEmail({ appNo, name, email }) {
     `,
     });
 
-    console.info("[consultation] user email sent:", { to: email, messageId: info.messageId, accepted: info.accepted, rejected: info.rejected });
+    console.info("[consultation] user email sent:", {
+      to: email,
+      messageId: info.messageId,
+      accepted: info.accepted,
+      rejected: info.rejected,
+    });
     return info;
   } catch (err) {
     console.error("[consultation] sendUserEmail error:", err && err.message ? err.message : err);
