@@ -21,47 +21,40 @@ exports.submitConsultation = async (req, res) => {
     const appNo = generateAppNo();
     const payload = { appNo, name, email, phone, service, message };
 
-    const results = await Promise.allSettled([
+    res.status(200).json({ success: true, appNo });
+
+    Promise.allSettled([
       sendAdminEmail(payload),
       sendUserEmail(payload),
       sendAdminWhatsapp(payload),
       sendUserWhatsapp(payload),
-    ]);
+    ])
+      .then((results) => {
+        const failures = results
+          .map((result, index) => {
+            if (result.status === "rejected") {
+              const errorMap = [
+                "admin-email",
+                "user-email",
+                "admin-whatsapp",
+                "user-whatsapp",
+              ];
+              return {
+                error: errorMap[index],
+                detail: result.reason?.message || String(result.reason),
+              };
+            }
+            return null;
+          })
+          .filter(Boolean);
 
-    const failures = results
-      .map((result, index) => {
-        if (result.status === "rejected") {
-          const errorMap = [
-            "admin-email",
-            "user-email",
-            "admin-whatsapp",
-            "user-whatsapp",
-          ];
-          return {
-            error: errorMap[index],
-            detail: result.reason?.message || String(result.reason),
-          };
-        }
-        return null;
+        failures.forEach((f) => console.warn(`[consultation] ${f.error} failed:`, f.detail));
       })
-      .filter(Boolean);
-
-    const emailSucceeded = results[0].status === "fulfilled" || results[1].status === "fulfilled";
-
-    if (failures.length && !emailSucceeded) {
-      failures.forEach((f) => console.error(`[consultation] ${f.error} failed:`, f.detail));
-      return res.status(502).json({
-        success: false,
-        error: "We received your request but could not send the notification emails. Please try again shortly.",
-        details: failures,
+      .catch((err) => {
+        console.error("[consultation] notification background error:", err);
       });
-    }
 
-    if (failures.length) {
-      failures.forEach((f) => console.warn(`[consultation] ${f.error} failed:`, f.detail));
-    }
-
-    return res.status(200).json({ success: true, appNo });
+    return;
   } catch (err) {
     console.error("[consultation] unexpected error:", err);
     return res.status(500).json({
