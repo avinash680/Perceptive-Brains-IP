@@ -30,7 +30,7 @@ const getApiUrl = () => {
   const host = window.location.hostname;
   const isLocalHost = ["localhost", "127.0.0.1", "::1"].includes(host);
   baseUrl = baseUrl || (isLocalHost ? "http://localhost:8080" : "https://perceptive-brains-ip.onrender.com");
-  return `${baseUrl.replace(/\/$/, "")}/contact`;
+  return `${baseUrl.replace(/\/$/, "")}/consultation`;
 };
 
 const Field = ({ icon: Icon, label, ...props }) => (
@@ -83,9 +83,19 @@ export default function ContactForm({ serviceOptions }) {
 
     const controller = new AbortController();
     const timeoutId = window.setTimeout(() => controller.abort(), 15000);
+    let url = null;
 
     try {
-      const res = await fetch(getApiUrl(), {
+      try {
+        url = getApiUrl();
+      } catch (e) {
+        throw new Error("Failed to resolve API URL: " + (e.message || e));
+      }
+
+      // Diagnostic log to help identify wrong endpoint in production
+      console.log('[contact-form] submitting to', url, 'payload:', JSON.stringify(form));
+
+      const res = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
@@ -112,7 +122,7 @@ export default function ContactForm({ serviceOptions }) {
           : err instanceof TypeError
             ? "Could not reach the server. Please check your connection and try again."
             : err.message || "Something went wrong. Please try again.";
-      setErrorMsg(message);
+      setErrorMsg(url ? `${message} (endpoint: ${url})` : message);
       setSubmitted(false);
     } finally {
       window.clearTimeout(timeoutId);
