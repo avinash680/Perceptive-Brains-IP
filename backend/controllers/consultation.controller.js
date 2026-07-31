@@ -21,28 +21,41 @@ exports.submitConsultation = async (req, res) => {
     const appNo = generateAppNo();
     const payload = { appNo, name, email, phone, service, message };
 
-    // Fire all four notifications in parallel. Each is wrapped so one
-    // failure (e.g. WhatsApp not configured) doesn't block the others.
-    const tasks = [
-      sendAdminEmail(payload).catch((e) => ({ error: "admin-email", detail: e.message })),
-      sendUserEmail(payload).catch((e) => ({ error: "user-email", detail: e.message })),
-      sendAdminWhatsapp(payload).catch((e) => ({ error: "admin-whatsapp", detail: e.message })),
-      sendUserWhatsapp(payload).catch((e) => ({ error: "user-whatsapp", detail: e.message })),
-    ];
+    // Respond immediately so the user doesn't wait for external email/WhatsApp APIs.
+    res.status(200).json({ success: true, appNo });
 
-    const results = await Promise.all(tasks);
-    const failures = results.filter((r) => r && r.error);
+    Promise.allSettled([
+      sendAdminEmail(payload),
+      sendUserEmail(payload),
+      sendAdminWhatsapp(payload),
+      sendUserWhatsapp(payload),
+    ])
+      .then((results) => {
+        const failures = results
+          .map((result, index) => {
+            if (result.status === "rejected") {
+              const errorMap = [
+                "admin-email",
+                "user-email",
+                "admin-whatsapp",
+                "user-whatsapp",
+              ];
+              return {
+                error: errorMap[index],
+                detail: result.reason?.message || String(result.reason),
+              };
+            }
+            return null;
+          })
+          .filter(Boolean);
 
-    if (failures.length) {
-      failures.forEach((f) => console.error(`[consultation] ${f.error} failed:`, f.detail));
-    }
+        failures.forEach((f) => console.error(`[consultation] ${f.error} failed:`, f.detail));
+      })
+      .catch((err) => {
+        console.error("[consultation] notification background error:", err);
+      });
 
-    return res.status(200).json({
-      success: true,
-      appNo,
-      // Lets the frontend optionally surface a "some notifications didn't send" note
-      warnings: failures.map((f) => f.error),
-    });
+    return;
   } catch (err) {
     console.error("[consultation] unexpected error:", err);
     return res.status(500).json({

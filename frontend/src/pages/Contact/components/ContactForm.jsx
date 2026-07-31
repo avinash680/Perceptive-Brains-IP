@@ -13,6 +13,8 @@ import {
     Stamp,
 } from "lucide-react";
 
+
+
 const getApiUrl = () => {
   const configuredUrl = import.meta.env.VITE_API_URL;
   const host = window.location.hostname;
@@ -261,4 +263,3 @@ export default function ContactForm({ serviceOptions }) {
       </div>
     </div>
   );
-}
