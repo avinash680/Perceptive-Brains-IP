@@ -143,8 +143,9 @@ export default function Hero() {
         throw new Error(data?.error || `Unexpected response (${res.status}): ${errText}`);
       }
 
-      setAppNo(data.appNo);
+      setAppNo(data.appNo || "PENDING");
       setSubmitted(true);
+      setLastResponse(null);
     } catch (err) {
       const message =
         err.name === "AbortError"

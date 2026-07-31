@@ -1,7 +1,13 @@
 const twilio = require("twilio");
 const config = require("../config/env");
 
-const client = twilio(config.twilio.accountSid, config.twilio.authToken);
+function getClient() {
+  if (!config.twilio.accountSid || !config.twilio.authToken) {
+    throw new Error("Twilio credentials are incomplete.");
+  }
+
+  return twilio(config.twilio.accountSid, config.twilio.authToken);
+}
 
 function toWhatsAppAddress(rawNumber) {
   if (!rawNumber) return null;
@@ -15,6 +21,7 @@ async function sendAdminWhatsapp({ appNo, name, email, phone, service, message }
   const to = toWhatsAppAddress(config.admin.whatsapp);
   if (!to) return null;
 
+  const client = getClient();
   const body =
     `📥 *New Consultation Request*\n` +
     `App No: ${appNo}\n` +
@@ -38,6 +45,7 @@ async function sendUserWhatsapp({ appNo, name, phone }) {
   const to = toWhatsAppAddress(phone);
   if (!to) return null; // no phone provided, skip silently
 
+  const client = getClient();
   const body =
     `Hi ${name}, thanks for your application! 🎉\n` +
     `Your application number is *${appNo}*.\n` +

@@ -1,20 +1,31 @@
 const nodemailer = require("nodemailer");
 const config = require("../config/env");
 
-const transporter = nodemailer.createTransport({
-  host: config.smtp.host,
-  port: config.smtp.port,
-  secure: config.smtp.port === 465, // true for port 465, false for 587/others
-  auth: {
-    user: config.smtp.user,
-    pass: config.smtp.pass,
-  },
-});
+function createTransporter() {
+  if (!config.smtp.host || !config.smtp.user || !config.smtp.pass || !config.smtp.from) {
+    throw new Error("SMTP configuration is incomplete.");
+  }
+
+  const port = Number.isFinite(config.smtp.port) ? config.smtp.port : 587;
+
+  return nodemailer.createTransport({
+    host: config.smtp.host,
+    port,
+    secure: port === 465,
+    requireTLS: port !== 465,
+    auth: {
+      user: config.smtp.user,
+      pass: config.smtp.pass,
+    },
+  });
+}
 
 /**
  * Notify the admin/firm that a new consultation request came in.
  */
 async function sendAdminEmail({ appNo, name, email, phone, service, message }) {
+  const transporter = createTransporter();
+
   return transporter.sendMail({
     from: config.smtp.from,
     to: config.admin.email,
@@ -39,6 +50,8 @@ async function sendAdminEmail({ appNo, name, email, phone, service, message }) {
  * Confirmation email sent back to the applicant.
  */
 async function sendUserEmail({ appNo, name, email }) {
+  const transporter = createTransporter();
+
   return transporter.sendMail({
     from: config.smtp.from,
     to: email,

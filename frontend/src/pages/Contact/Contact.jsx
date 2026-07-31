@@ -135,9 +135,9 @@ export default function ConsultationCompact() {
         throw new Error(data?.error || `Unexpected response (${res.status}): ${errText}`);
       }
 
-      // Only now — after a confirmed success from the backend — do we show the success screen.
-      setAppNo(data.appNo);
+      setAppNo(data.appNo || "PENDING");
       setSubmitted(true);
+      setLastResponse(null);
     } catch (err) {
       // Network failure (server down, CORS, no internet) vs. thrown app error
       const message =
