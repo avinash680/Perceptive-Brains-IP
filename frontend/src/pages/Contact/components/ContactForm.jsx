@@ -102,12 +102,19 @@ export default function ContactForm({ serviceOptions }) {
       console.log('[contact-form] response', { status: res.status, duration: `${duration}ms`, body: data });
       setLastResponse({ status: res.status, duration, body: data });
 
-      if (!res.ok || !(data && data.success)) {
-        const errText = typeof data === 'string' ? data : JSON.stringify(data);
+      const isSuccessResponse =
+        res.ok &&
+        ((typeof data === "object" && data !== null && data.success) ||
+          (typeof data === "string" && data.includes("success") && data.includes("true")) ||
+          (typeof data === "string" && data.includes("appNo")));
+
+      if (!isSuccessResponse) {
+        const errText = typeof data === "string" ? data : JSON.stringify(data);
         throw new Error(data?.error || `Unexpected response (${res.status}): ${errText}`);
       }
 
-      setAppNo(data.appNo || "PENDING");
+      const successPayload = typeof data === "object" && data !== null ? data : {};
+      setAppNo(successPayload.appNo || "PENDING");
       setSubmitted(true);
       setLastResponse(null);
     } catch (err) {
