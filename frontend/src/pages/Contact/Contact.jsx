@@ -48,8 +48,8 @@ const initialForm = {
   message: "",
 };
 
-// Use the deployed backend URL by default, with an environment override available for local development.
-const API_URL = import.meta.env.VITE_API_URL || "https://perceptive-brains-ip.onrender.com/consultation";
+// Use the deployed backend URL in production and the local backend during development.
+const API_URL = `${(import.meta.env.VITE_API_URL || (window.location.hostname === "localhost" ? "http://localhost:8080" : "https://perceptive-brains-ip.onrender.com")).replace(/\/$/, "")}/consultation`;
 
 const Field = ({ icon: Icon, label, ...props }) => (
   <label className="block">
