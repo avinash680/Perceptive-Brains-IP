@@ -30,7 +30,7 @@ const getApiUrl = () => {
   const host = window.location.hostname;
   const isLocalHost = ["localhost", "127.0.0.1", "::1"].includes(host);
   baseUrl = baseUrl || (isLocalHost ? "http://localhost:8080" : "https://perceptive-brains-ip.onrender.com");
-  return `${baseUrl.replace(/\/$/, "")}/consultation`;
+  return `${baseUrl.replace(/\/$/, "")}/contact`;
 };
 
 const Field = ({ icon: Icon, label, ...props }) => (
