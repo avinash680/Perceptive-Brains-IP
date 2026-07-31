@@ -26,9 +26,12 @@ function createTransporter() {
 async function sendAdminEmail({ appNo, name, email, phone, service, message }) {
   const transporter = createTransporter();
 
+  const fromEmail = config.smtp.from || config.smtp.user;
+  const adminEmail = config.admin.email || fromEmail;
+
   return transporter.sendMail({
-    from: config.smtp.from,
-    to: config.admin.email,
+    from: `Perceptive Brains IP <${fromEmail}>`,
+    to: adminEmail,
     subject: `New Consultation Request — ${appNo}`,
     html: `
       <div style="font-family: Arial, sans-serif; font-size: 14px; color: #1c1c1c;">
