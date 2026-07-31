@@ -48,8 +48,8 @@ const initialForm = {
   message: "",
 };
 
-// Use the backend port and route that are actually exposed by the server.
-const API_URL = "http://localhost:8080/consultation";
+// Use the deployed backend URL by default, with an environment override available for local development.
+const API_URL = import.meta.env.VITE_API_URL || "https://perceptive-brains-ip.onrender.com/consultation";
 
 const Field = ({ icon: Icon, label, ...props }) => (
   <label className="block">
