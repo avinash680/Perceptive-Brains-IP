@@ -48,6 +48,8 @@ export default function ContactForm({ serviceOptions }) {
   useConsultationWarmup();
   const [form, setForm] = useState(initialForm);
   const [submitted, setSubmitted] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [message, setMessage] = useState("");
   const [appNo, setAppNo] = useState("");
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
@@ -72,6 +74,8 @@ export default function ContactForm({ serviceOptions }) {
 
     setLoading(true);
     setErrorMsg("");
+    setShowSuccess(false);
+    setMessage("");
 
     let url = null;
 
@@ -81,12 +85,22 @@ export default function ContactForm({ serviceOptions }) {
 
       const { status, duration, data } = await submitConsultation(form);
 
+      console.log("FULL RESPONSE:", data);
       console.log("[contact-form] response", { status, duration: `${duration}ms`, body: data });
       setLastResponse({ status, duration, body: data });
-      setAppNo(data.appNo || "PENDING");
-      setSubmitted(true);
-      setForm(initialForm);
+
+      if (data.success) {
+        setShowSuccess(true);
+        setMessage(`Application submitted successfully. Your App No: ${data.appNo}`);
+        setAppNo(data.appNo || "PENDING");
+        setSubmitted(true);
+        setForm(initialForm);
+      } else {
+        setErrorMsg(getConsultationErrorMessage(new Error(data.error || "Submission failed."), url));
+        setSubmitted(false);
+      }
     } catch (err) {
+      console.log(err);
       setErrorMsg(getConsultationErrorMessage(err, url));
       setSubmitted(false);
     } finally {
@@ -121,6 +135,11 @@ export default function ContactForm({ serviceOptions }) {
             </div>
             <p className="ip-mono mb-2 text-[9.5px] tracking-widest text-amber-700">APPLICATION NO. {appNo}</p>
             <h3 className="ip-serif mb-2 text-xl font-semibold text-stone-900">Application received</h3>
+            {showSuccess && message && (
+              <p className="mx-auto mb-3 max-w-xs text-[13px] leading-5 text-emerald-700">
+                {message}
+              </p>
+            )}
             <p className="mx-auto max-w-xs text-[13px] leading-5 text-stone-500">
               A registered attorney will review your details and reach out within 24 hours.
             </p>
