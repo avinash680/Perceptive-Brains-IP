@@ -1,12 +1,10 @@
 const dotenv = require("dotenv");
-const express = require('express');
+const express = require("express");
 const cors = require("cors");
-const consultationRoute = require('./routes/consultation.route');
-const config = require('./config/env');
+const consultationRoute = require("./routes/consultation.route");
+const config = require("./config/env");
 
 const app = express();
-
-const cors = require("cors");
 
 const allowedOrigins = (process.env.FRONTEND_ORIGIN || "")
   .split(",")
