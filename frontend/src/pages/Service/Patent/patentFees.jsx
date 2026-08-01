@@ -27,32 +27,35 @@ import {
    fees live as you go.
 
    NOTE ON DATA: Patents, Designs and Copyright figures are transcribed from
-   the firm's fee schedule document. Trademark and International figures were
-   not present in the source document — flagged as "Indicative" / "Custom
-   Quote" and should be replaced with real numbers before going live.
+   the firm's fee schedule document. International figures were not present
+   in the source document — flagged as "Custom Quote" and should be replaced
+   with real numbers before going live.
 ============================================================================ */
 
 /* ---------------------------- Applicant type -------------------------------
-   NOTE: Government fees for patents/designs/trademarks in India vary by
-   applicant category (e.g. natural person / startup / small entity pay a
-   reduced govt. fee vs. a large entity). This selector currently only
-   captures the choice — hook it into the per-service govt fee calculation
-   once the category-wise fee schedule is finalised.
+   Two checkboxes only, each with its full label shown below the box:
+   1. Educational Institute / Small Entity / Natural Person
+   2. Public Ltd / Private Ltd / Startup
+
+   Public Ltd / Private Ltd / Startup applicants pay a 5x rate (on the
+   combined govt + professional fee) for BOTH Patents and Designs.
+   The multiplied fee is shown as a visible formula in the summary panel
+   and in the downloaded quote note.
 ----------------------------------------------------------------------------- */
-const ENTITY_TYPES = [
-  { id: "individual", label: "Individual" },
-  { id: "startup", label: "Startup" },
-  { id: "public_ltd", label: "Public Ltd" },
-  { id: "private_limited", label: "Private Limited" },
-  { id: "small_entity", label: "Small Entity" },
-  { id: "education", label: "Education" },
-  { id: "educational_institution", label: "Educational Institution" },
-  { id: "natural_person", label: "Natural Person" },
+const APPLICANT_CATEGORIES = [
+  {
+    id: "individual",
+    label: "Educational Institute / Small Entity / Natural Person",
+  },
+  {
+    id: "corporate",
+    label: "Public Ltd / Private Ltd / Startup",
+  },
 ];
 
 const CATEGORIES = [
   { id: "patents", label: "Patents", icon: Layers, package: 30000, packageLabel: "Search to Grant" },
-  { id: "trademarks", label: "Trademarks", icon: BadgeCheck, package: null, indicative: true },
+  { id: "trademarks", label: "Trademarks", icon: BadgeCheck, package: null },
   { id: "copyright", label: "Copyright", icon: FileText, package: 20000, packageLabel: "Application to Registration" },
   { id: "designs", label: "Designs", icon: Sparkles, package: 13000, packageLabel: "Search to Grant" },
   { id: "international", label: "International", icon: Globe2, package: null, customQuote: true },
@@ -63,7 +66,7 @@ const SERVICES = {
     {
       id: "p1",
       name: "Prior Art Search (Paid Software)",
-      professionalFee: 2000,
+      professionalFee: 2000 ,
       govtFee: 0,
       govtFeeLabel: "N/A",
       timeline: "3–5 days",
@@ -291,8 +294,7 @@ const SERVICES = {
       id: "t2",
       name: "Trademark Application Filing (per class)",
       professionalFee: 5000,
-      govtFee: null,
-      govtFeeLabel: "₹4,500–₹9,000",
+      govtFee: 4500,
       timeline: "1 week",
       timelineDays: 7,
       description: "Drafting and e-filing the trademark application in the selected class(es) of goods or services.",
@@ -382,44 +384,176 @@ const SERVICES = {
 const inr = (n) => (typeof n === "number" ? `₹${n.toLocaleString("en-IN")}` : n);
 const feeNumber = (n) => (typeof n === "number" ? n : 0);
 const totalFee = (svc) => svc.professionalFee + feeNumber(svc.govtFee);
-const categoryTotal = (catId, selectedIds) =>
-  SERVICES[catId].reduce((sum, s) => (selectedIds[s.id] ? sum + totalFee(s) : sum), 0);
 const categoryCount = (catId, selectedIds) =>
   SERVICES[catId].reduce((sum, s) => (selectedIds[s.id] ? sum + 1 : sum), 0);
 
-/* --------------------------- Applicant type selector ------------------------ */
-function EntityTypeSelector({ selected, onSelect }) {
+// Service ids follow a "<letter><number>" convention — first letter maps to category.
+const SERVICE_ID_PREFIX_TO_CATEGORY = { p: "patents", d: "designs", c: "copyright", t: "trademarks", i: "international" };
+const getServiceCategory = (id) => SERVICE_ID_PREFIX_TO_CATEGORY[id.charAt(0)];
+
+// Public Ltd / Private Ltd / Startup applicants pay corporate-rate multipliers
+// on certain categories:
+//   - Patents: Govt Fee x5 and Professional Fee x2, applied SEPARATELY.
+//              Total = (Govt x5) + (Professional x2).
+//   - Designs: Govt Fee x4 and Professional Fee x2, applied SEPARATELY.
+//              Total = (Govt x4) + (Professional x2).
+//   - Trademarks: Professional Fee x2 only — Govt Fee is left untouched.
+//              Total = Govt + (Professional x2).
+//   - Copyright: Professional Fee x2 only — Govt Fee is left untouched.
+//              Total = Govt + (Professional x2).
+// The Govt Fee and Professional Fee columns show the FINAL (already-
+// multiplied) amount once the corporate rate applies — no formula text.
+// `baseGovtFee` / `baseProfessionalFee` are kept on the returned object so
+// the summary panel can still show a "before -> after" reference if needed.
+// Govt fees that aren't numeric (N/A, "As Applicable", etc.) are left as-is
+// since there's nothing to scale.
+const PATENT_GOVT_FEE_MULTIPLIER = 5;
+const PATENT_PROFESSIONAL_FEE_MULTIPLIER = 2;
+// Per-service overrides for the Govt Fee multiplier (falls back to
+// PATENT_GOVT_FEE_MULTIPLIER above when a service id isn't listed here).
+// p5 = Expedited Examination, which gets a higher x7.5 rate.
+const PATENT_GOVT_FEE_MULTIPLIER_OVERRIDES = { p5: 7.5 };
+// Services in this list only get the Govt Fee corporate multiplier applied —
+// their Professional Fee stays at its normal base amount, unmultiplied.
+// p5 = Expedited Examination.
+const PATENT_GOVT_ONLY_SERVICE_IDS = ["p5"];
+const DESIGN_GOVT_FEE_MULTIPLIER = 4;
+const DESIGN_PROFESSIONAL_FEE_MULTIPLIER = 2;
+const TRADEMARK_PROFESSIONAL_FEE_MULTIPLIER = 2;
+const COPYRIGHT_PROFESSIONAL_FEE_MULTIPLIER = 2;
+const ENTITY_MULTIPLIER_CATEGORIES = ["patents", "designs", "trademarks", "copyright"];
+
+const applyEntityMultiplier = (svc, isCorporate) => {
+  const svcCategory = getServiceCategory(svc.id);
+  const govtIsNumeric = typeof svc.govtFee === "number";
+
+  if (isCorporate && svcCategory === "patents") {
+    const govtOnly = PATENT_GOVT_ONLY_SERVICE_IDS.includes(svc.id);
+    const govtMultiplier = PATENT_GOVT_FEE_MULTIPLIER_OVERRIDES[svc.id] ?? PATENT_GOVT_FEE_MULTIPLIER;
+    return {
+      ...svc,
+      professionalFee: govtOnly ? svc.professionalFee : svc.professionalFee * PATENT_PROFESSIONAL_FEE_MULTIPLIER,
+      baseProfessionalFee: svc.professionalFee,
+      govtFee: govtIsNumeric ? svc.govtFee * govtMultiplier : svc.govtFee,
+      baseGovtFee: svc.govtFee,
+      isGovtFeeMultiplied: govtIsNumeric,
+      isProfessionalFeeMultiplied: !govtOnly,
+      govtFeeMultiplier: govtMultiplier,
+      professionalFeeMultiplier: govtOnly ? undefined : PATENT_PROFESSIONAL_FEE_MULTIPLIER,
+    };
+  }
+
+  if (isCorporate && svcCategory === "designs") {
+    return {
+      ...svc,
+      professionalFee: svc.professionalFee * DESIGN_PROFESSIONAL_FEE_MULTIPLIER,
+      baseProfessionalFee: svc.professionalFee,
+      govtFee: govtIsNumeric ? svc.govtFee * DESIGN_GOVT_FEE_MULTIPLIER : svc.govtFee,
+      baseGovtFee: svc.govtFee,
+      isGovtFeeMultiplied: govtIsNumeric,
+      isProfessionalFeeMultiplied: true,
+      govtFeeMultiplier: DESIGN_GOVT_FEE_MULTIPLIER,
+      professionalFeeMultiplier: DESIGN_PROFESSIONAL_FEE_MULTIPLIER,
+    };
+  }
+
+  if (isCorporate && svcCategory === "trademarks") {
+    return {
+      ...svc,
+      professionalFee: svc.professionalFee * TRADEMARK_PROFESSIONAL_FEE_MULTIPLIER,
+      baseProfessionalFee: svc.professionalFee,
+      baseGovtFee: svc.govtFee,
+      isGovtFeeMultiplied: false,
+      isProfessionalFeeMultiplied: true,
+      professionalFeeMultiplier: TRADEMARK_PROFESSIONAL_FEE_MULTIPLIER,
+    };
+  }
+
+  if (isCorporate && svcCategory === "copyright") {
+    return {
+      ...svc,
+      professionalFee: svc.professionalFee * COPYRIGHT_PROFESSIONAL_FEE_MULTIPLIER,
+      baseProfessionalFee: svc.professionalFee,
+      baseGovtFee: svc.govtFee,
+      isGovtFeeMultiplied: false,
+      isProfessionalFeeMultiplied: true,
+      professionalFeeMultiplier: COPYRIGHT_PROFESSIONAL_FEE_MULTIPLIER,
+    };
+  }
+
+  return {
+    ...svc,
+    baseProfessionalFee: svc.professionalFee,
+    baseGovtFee: svc.govtFee,
+    isGovtFeeMultiplied: false,
+    isProfessionalFeeMultiplied: false,
+  };
+};
+
+// Professional Fee column: shows the final amount — the plain base fee
+// normally, or the already-multiplied result when the corporate rate applies
+// (Patents x2, Designs x5). No formula text, just the resulting figure.
+const formatProfessionalFee = (svc) => inr(svc.professionalFee);
+
+// Govt Fee column: shows the final amount — the plain base fee / label
+// normally, or the already-multiplied result when the corporate rate
+// applies and the govt fee is numeric. No formula text, just the figure.
+const formatGovtFee = (svc) =>
+  svc.isGovtFeeMultiplied ? inr(svc.govtFee) : svc.govtFeeLabel ?? inr(svc.baseGovtFee);
+
+// Total Fee column: always just the plain final total (or "+fee" for
+// variable govt fees like "As Applicable"/"Per WIPO fee schedule"). The
+// x5 multiplier (when it applies) is already baked into totalFee(svc).
+const formatTotalFee = (svc) =>
+  typeof svc.govtFee === "number" ? inr(totalFee(svc)) : `${inr(svc.professionalFee)} + fee`;
+
+
+const categoryTotal = (catId, selectedIds, isCorporate) =>
+  SERVICES[catId].reduce(
+    (sum, s) => (selectedIds[s.id] ? sum + totalFee(applyEntityMultiplier(s, isCorporate)) : sum),
+    0
+  );
+
+/* --------------------------- Applicant type selector ------------------------
+   Just two checkboxes. Each box sits above its full label so long compound
+   names ("Educational Institute / Small Entity / Natural Person") wrap
+   cleanly underneath instead of being squeezed beside the box.
+----------------------------------------------------------------------------- */
+function EntityTypeSelector({ selected, onToggle }) {
   return (
     <div className="mb-5">
       <div className="text-[11px] font-semibold uppercase tracking-wider text-[#0B2545]/50 mb-2 flex items-center gap-1.5">
         <User className="h-3.5 w-3.5" />
-        Applicant Type
+        Fee Schedule, by Entity
       </div>
-      <div className="flex flex-wrap gap-2">
-        {ENTITY_TYPES.map((et) => {
-          const checked = selected === et.id;
+
+      <div
+        role="radiogroup"
+        aria-label="Fee Schedule, by Entity"
+        className="relative flex max-w-md rounded-xl border border-black/10 bg-white p-1 gap-1"
+      >
+        {APPLICANT_CATEGORIES.map((cat) => {
+          const checked = selected.includes(cat.id);
           return (
             <button
-              key={et.id}
+              key={cat.id}
               type="button"
-              role="checkbox"
+              role="radio"
               aria-checked={checked}
-              aria-label={et.label}
-              onClick={() => onSelect(checked ? null : et.id)}
-              className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg border text-xs font-medium transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0F9B8E] ${
-                checked
-                  ? "bg-[#0F9B8E]/10 border-[#0F9B8E] text-[#0B2545]"
-                  : "bg-white border-black/10 text-[#0B2545]/70 hover:border-[#0F9B8E]/50"
+              aria-label={cat.label}
+              onClick={() => onToggle(cat.id)}
+              className={`relative flex-1 rounded-lg px-3 py-2.5 text-center transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0F9B8E] ${
+                checked ? "text-white" : "text-[#0B2545]/70 hover:text-[#0B2545]"
               }`}
             >
-              <span
-                className={`h-4 w-4 rounded-[4px] border-2 grid place-items-center shrink-0 transition-colors ${
-                  checked ? "bg-[#0F9B8E] border-[#0F9B8E]" : "border-black/25"
-                }`}
-              >
-                {checked && <Check className="h-3 w-3 text-white" strokeWidth={3} />}
-              </span>
-              {et.label}
+              {checked && (
+                <motion.span
+                  layoutId="applicant-toggle-pill"
+                  transition={{ type: "spring", stiffness: 400, damping: 32 }}
+                  className="absolute inset-0 rounded-lg bg-gradient-to-r from-[#1E4E8C] to-[#0F9B8E] shadow-[0_6px_16px_-6px_rgba(15,155,142,0.55)]"
+                />
+              )}
+              <span className="relative text-xs font-medium leading-snug">{cat.label}</span>
             </button>
           );
         })}
@@ -537,7 +671,6 @@ function Toolbar({ query, setQuery, sortKey, setSortKey, onAddAll, allSelected }
 
 /* ------------------------------ Service row --------------------------------- */
 function ServiceRow({ svc, checked, onToggle, expanded, onExpand }) {
-  const total = totalFee(svc);
   return (
     <div className={`border-b border-black/5 last:border-b-0 transition-colors ${checked ? "bg-[#0F9B8E]/[0.06]" : ""}`}>
       <div className="grid grid-cols-[28px_2fr_1fr_1fr_1fr_0.8fr_36px] gap-2 px-4 md:px-5 py-4 items-center">
@@ -557,11 +690,13 @@ function ServiceRow({ svc, checked, onToggle, expanded, onExpand }) {
           {svc.name}
         </div>
         <div className="hidden md:block font-mono text-sm text-[#0B2545]/70">
-          {svc.govtFeeLabel ?? inr(svc.govtFee)}
+          {formatGovtFee(svc)}
         </div>
-        <div className="hidden md:block font-mono text-sm text-[#0B2545]/70">{inr(svc.professionalFee)}</div>
+        <div className="hidden md:block font-mono text-sm text-[#0B2545]/70">
+          {formatProfessionalFee(svc)}
+        </div>
         <div className="hidden md:block font-mono text-sm font-semibold text-[#0B2545]">
-          {typeof svc.govtFee === "number" ? inr(total) : `${inr(svc.professionalFee)} + fee`}
+          {formatTotalFee(svc)}
         </div>
         <div className="hidden md:block text-xs text-[#0B2545]/60">{svc.timeline}</div>
         <button
@@ -578,10 +713,10 @@ function ServiceRow({ svc, checked, onToggle, expanded, onExpand }) {
 
       {/* Mobile fee row */}
       <div className="md:hidden -mt-2 px-4 pb-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-[#0B2545]/60">
-        <span>Govt: <span className="font-mono">{svc.govtFeeLabel ?? inr(svc.govtFee)}</span></span>
-        <span>Prof: <span className="font-mono">{inr(svc.professionalFee)}</span></span>
+        <span>Govt: <span className="font-mono">{formatGovtFee(svc)}</span></span>
+        <span>Prof: <span className="font-mono">{formatProfessionalFee(svc)}</span></span>
         <span className="font-mono font-semibold text-[#0B2545]">
-          {typeof svc.govtFee === "number" ? inr(total) : `${inr(svc.professionalFee)} + fee`}
+          {formatTotalFee(svc)}
         </span>
         <span>{svc.timeline}</span>
       </div>
@@ -697,7 +832,20 @@ function SummaryPanel({ selectedServices, packageCategories, onClear, onDownload
                   transition={{ duration: 0.2 }}
                   className="group flex items-center justify-between gap-2 text-xs"
                 >
-                  <span className="text-white/75 truncate">{s.name}</span>
+                  <span className="text-white/75 truncate">
+                    {s.name}
+                    {(s.isGovtFeeMultiplied || s.isProfessionalFeeMultiplied) && (
+                      <span className="text-white/40">
+                        {" "}
+                        (
+                        {s.isGovtFeeMultiplied && `Govt ${inr(feeNumber(s.baseGovtFee))} x${s.govtFeeMultiplier}`}
+                        {s.isGovtFeeMultiplied && s.isProfessionalFeeMultiplied && " + "}
+                        {s.isProfessionalFeeMultiplied &&
+                          `Prof ${inr(s.baseProfessionalFee)} x${s.professionalFeeMultiplier}`}
+                        )
+                      </span>
+                    )}
+                  </span>
                   <span className="flex items-center gap-1.5 shrink-0">
                     <span className="font-mono text-white/90">
                       {typeof s.govtFee === "number" ? inr(totalFee(s)) : `${inr(s.professionalFee)}+`}
@@ -800,7 +948,7 @@ function SummaryPanel({ selectedServices, packageCategories, onClear, onDownload
 
 /* ----------------------------------- Root ------------------------------------ */
 export default function IPFeeCalculator() {
-  const [entityType, setEntityType] = useState(null);
+  const [applicantCategories, setApplicantCategories] = useState(["individual"]);
   const [category, setCategory] = useState("patents");
   const [selectedIds, setSelectedIds] = useState({});
   const [expandedId, setExpandedId] = useState(null);
@@ -808,16 +956,21 @@ export default function IPFeeCalculator() {
   const [sortKey, setSortKey] = useState("default");
 
   const catMeta = CATEGORIES.find((c) => c.id === category);
+  const isCorporate = applicantCategories.includes("corporate");
+
+  const toggleApplicantCategory = (id) => {
+    setApplicantCategories((prev) => (prev.includes(id) ? [] : [id]));
+  };
 
   const services = useMemo(() => {
-    let list = SERVICES[category].filter((s) =>
-      s.name.toLowerCase().includes(query.trim().toLowerCase())
-    );
+    let list = SERVICES[category]
+      .map((s) => applyEntityMultiplier(s, isCorporate))
+      .filter((s) => s.name.toLowerCase().includes(query.trim().toLowerCase()));
     if (sortKey === "fee-asc") list = [...list].sort((a, b) => totalFee(a) - totalFee(b));
     if (sortKey === "fee-desc") list = [...list].sort((a, b) => totalFee(b) - totalFee(a));
     if (sortKey === "timeline") list = [...list].sort((a, b) => a.timelineDays - b.timelineDays);
     return list;
-  }, [category, query, sortKey]);
+  }, [category, query, sortKey, isCorporate]);
 
   const toggle = (id) => {
     setSelectedIds((prev) => ({ ...prev, [id]: !prev[id] }));
@@ -843,8 +996,10 @@ export default function IPFeeCalculator() {
 
   const selectedServices = useMemo(() => {
     const all = Object.values(SERVICES).flat();
-    return all.filter((s) => selectedIds[s.id]);
-  }, [selectedIds]);
+    return all
+      .filter((s) => selectedIds[s.id])
+      .map((s) => applyEntityMultiplier(s, isCorporate));
+  }, [selectedIds, isCorporate]);
 
   // Categories where every service is selected AND a consolidated package price exists —
   // this is what now feeds the summary panel and the downloaded quote.
@@ -863,9 +1018,9 @@ export default function IPFeeCalculator() {
       .map(
         (s) => `<tr>
           <td>${s.name}</td>
-          <td>${s.govtFeeLabel ?? inr(s.govtFee)}</td>
-          <td>${inr(s.professionalFee)}</td>
-          <td>${typeof s.govtFee === "number" ? inr(totalFee(s)) : inr(s.professionalFee) + " + govt. fee"}</td>
+          <td>${formatGovtFee(s)}</td>
+          <td>${formatProfessionalFee(s)}</td>
+          <td>${formatTotalFee(s)}</td>
         </tr>`
       )
       .join("");
@@ -881,7 +1036,18 @@ export default function IPFeeCalculator() {
       )
       .join("");
 
-    const entityLabel = ENTITY_TYPES.find((e) => e.id === entityType)?.label;
+    const entityLabels = APPLICANT_CATEGORIES.filter((cat) => applicantCategories.includes(cat.id))
+      .map((cat) => cat.label)
+      .join(", ");
+
+    const hasPatentCorporateFees =
+      isCorporate && selectedServices.some((s) => getServiceCategory(s.id) === "patents");
+    const hasDesignCorporateFees =
+      isCorporate && selectedServices.some((s) => getServiceCategory(s.id) === "designs");
+    const hasTrademarkCorporateFees =
+      isCorporate && selectedServices.some((s) => getServiceCategory(s.id) === "trademarks");
+    const hasCopyrightCorporateFees =
+      isCorporate && selectedServices.some((s) => getServiceCategory(s.id) === "copyright");
 
     const quoteHtml = `
       <html><head><title>Perceptive Brains IP — Fee Estimate</title>
@@ -928,7 +1094,7 @@ export default function IPFeeCalculator() {
           <div>
             <h1>Perceptive Brains IP</h1>
             <p class="sub">Fee Estimate &middot; Generated ${new Date().toLocaleDateString()}${
-              entityLabel ? ` &middot; Applicant Type: ${entityLabel}` : ""
+              entityLabels ? ` &middot; Applicant Type: ${entityLabels}` : ""
             }</p>
           </div>
           <img class="header-logo" src="${pbipLogo}" alt="Perceptive Brains IP logo" />
@@ -941,6 +1107,10 @@ export default function IPFeeCalculator() {
         <p class="tot">Professional fees: <strong>${inr(profTotal)}</strong></p>
         <p class="tot">Estimated total (itemized): <strong>${inr(govtTotal + profTotal)}</strong></p>
         ${packageCategories.length > 0 ? `<p class="note">Consolidated package prices are shown above for comparison and are separate from the itemized total.</p>` : ""}
+        ${hasPatentCorporateFees ? `<p class="note">Patent Total Fee reflects Govt. Fee x${PATENT_GOVT_FEE_MULTIPLIER} plus Professional Fee x${PATENT_PROFESSIONAL_FEE_MULTIPLIER}, the corporate rate applicable to Public Ltd / Private Ltd / Startup applicants.</p>` : ""}
+        ${hasDesignCorporateFees ? `<p class="note">Design Total Fee reflects Govt. Fee x${DESIGN_GOVT_FEE_MULTIPLIER} plus Professional Fee x${DESIGN_PROFESSIONAL_FEE_MULTIPLIER}, the corporate rate applicable to Public Ltd / Private Ltd / Startup applicants.</p>` : ""}
+        ${hasTrademarkCorporateFees ? `<p class="note">Trademark Professional Fee reflects the ${TRADEMARK_PROFESSIONAL_FEE_MULTIPLIER}x rate applicable to Public Ltd / Private Ltd / Startup applicants. Govt. Fee is unaffected.</p>` : ""}
+        ${hasCopyrightCorporateFees ? `<p class="note">Copyright Professional Fee reflects the ${COPYRIGHT_PROFESSIONAL_FEE_MULTIPLIER}x rate applicable to Public Ltd / Private Ltd / Startup applicants. Govt. Fee is unaffected.</p>` : ""}
       </body></html>
     `;
 
@@ -957,13 +1127,41 @@ export default function IPFeeCalculator() {
 
   return (
     <div className="w-full font-sans">
-      <EntityTypeSelector selected={entityType} onSelect={setEntityType} />
+      <EntityTypeSelector selected={applicantCategories} onToggle={toggleApplicantCategory} />
 
-      {(catMeta.indicative || catMeta.customQuote) && (
+      {catMeta.customQuote && (
         <div className="mb-4 flex items-center gap-2 text-xs font-medium text-[#C9A227] bg-[#C9A227]/10 border border-[#C9A227]/25 rounded-lg px-3.5 py-2.5">
-          {catMeta.indicative
-            ? "Indicative figures shown — confirm exact fees with our team before filing."
-            : "International fees vary by jurisdiction — figures shown are estimates."}
+          International fees vary by jurisdiction — figures shown are estimates.
+        </div>
+      )}
+
+      {category === "patents" && isCorporate && (
+        <div className="mb-4 flex items-center gap-2 text-xs font-medium text-[#C9A227] bg-[#C9A227]/10 border border-[#C9A227]/25 rounded-lg px-3.5 py-2.5">
+          Patent Total Fee shown reflects Govt. Fee x{PATENT_GOVT_FEE_MULTIPLIER} plus Professional Fee x
+          {PATENT_PROFESSIONAL_FEE_MULTIPLIER}, the corporate rate applicable to Public Ltd / Private Ltd / Startup
+          applicants.
+        </div>
+      )}
+
+      {category === "designs" && isCorporate && (
+        <div className="mb-4 flex items-center gap-2 text-xs font-medium text-[#C9A227] bg-[#C9A227]/10 border border-[#C9A227]/25 rounded-lg px-3.5 py-2.5">
+          Design Total Fee shown reflects Govt. Fee x{DESIGN_GOVT_FEE_MULTIPLIER} plus Professional Fee x
+          {DESIGN_PROFESSIONAL_FEE_MULTIPLIER}, the corporate rate applicable to Public Ltd / Private Ltd / Startup
+          applicants.
+        </div>
+      )}
+
+      {category === "trademarks" && isCorporate && (
+        <div className="mb-4 flex items-center gap-2 text-xs font-medium text-[#C9A227] bg-[#C9A227]/10 border border-[#C9A227]/25 rounded-lg px-3.5 py-2.5">
+          Trademark Professional Fee shown reflects the {TRADEMARK_PROFESSIONAL_FEE_MULTIPLIER}x rate that applies to
+          Public Ltd / Private Ltd / Startup applicants. Govt. Fee is unaffected.
+        </div>
+      )}
+
+      {category === "copyright" && isCorporate && (
+        <div className="mb-4 flex items-center gap-2 text-xs font-medium text-[#C9A227] bg-[#C9A227]/10 border border-[#C9A227]/25 rounded-lg px-3.5 py-2.5">
+          Copyright Professional Fee shown reflects the {COPYRIGHT_PROFESSIONAL_FEE_MULTIPLIER}x rate that applies to
+          Public Ltd / Private Ltd / Startup applicants. Govt. Fee is unaffected.
         </div>
       )}
 
@@ -1033,7 +1231,7 @@ export default function IPFeeCalculator() {
                     {categorySelectedCount > 1 ? "s" : ""} in {catMeta.label})
                   </div>
                   <div className="font-mono text-lg font-semibold text-[#0B2545]">
-                    {inr(categoryTotal(category, selectedIds))}
+                    {inr(categoryTotal(category, selectedIds, isCorporate))}
                   </div>
                 </>
               )}

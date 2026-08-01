@@ -76,7 +76,6 @@ export default function ConsultationCompact() {
   const [appNo, setAppNo] = useState("");
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
-  const [lastResponse, setLastResponse] = useState(null);
 
   const update = (key) => (e) => {
     setForm((prev) => ({ ...prev, [key]: e.target.value }));
@@ -103,12 +102,8 @@ export default function ConsultationCompact() {
 
     try {
       url = getConsultationUrl();
-      console.log("[contact] submitting to", url, "payload:", JSON.stringify(form));
 
       const { status, duration, data } = await submitConsultation(form);
-
-      console.log("[contact] response", { status, duration: `${duration}ms`, body: data });
-      setLastResponse({ status, duration, body: data });
 
       setAppNo(data.appNo || "PENDING");
       setSubmitted(true);
@@ -251,14 +246,6 @@ export default function ConsultationCompact() {
                     <div className="fade-in mb-3 flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2.5">
                       <AlertTriangle size={14} className="mt-0.5 shrink-0 text-red-500" />
                       <p className="text-[12.5px] leading-snug text-red-700">{errorMsg}</p>
-                    </div>
-                  )}
-
-                  {lastResponse && (
-                    <div className="mb-3 rounded border border-slate-200 bg-slate-50 p-3 text-xs text-slate-700">
-                      <div className="mb-1 font-medium text-slate-800">Last response (debug)</div>
-                      <div>Status: {lastResponse.status} • Duration: {lastResponse.duration}ms</div>
-                      <pre className="mt-2 max-h-36 overflow-auto text-[11px]">{JSON.stringify(lastResponse.body, null, 2)}</pre>
                     </div>
                   )}
 

@@ -90,7 +90,6 @@ export default function Hero() {
   const [appNo, setAppNo] = useState("");
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
-  const [lastResponse, setLastResponse] = useState(null);
 
   const update = (key) => (e) => {
     setForm((f) => ({ ...f, [key]: e.target.value }));
@@ -114,12 +113,8 @@ export default function Hero() {
 
     try {
       url = getConsultationUrl();
-      console.log("[hero] submitting to", url, "payload:", JSON.stringify(form));
 
       const { status, duration, data } = await submitConsultation(form);
-
-      console.log("[hero] response", { status, duration: `${duration}ms`, body: data });
-      setLastResponse({ status, duration, body: data });
 
       setAppNo(data.appNo || "PENDING");
       setSubmitted(true);
