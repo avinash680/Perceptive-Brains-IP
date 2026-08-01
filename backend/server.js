@@ -1,7 +1,6 @@
 const http = require("http");
 const app = require("./app");
 const config = require("./config/env");
-const { verifySmtpConnection } = require("./service/consultation.service");
 
 const server = http.createServer(app);
 
@@ -20,15 +19,7 @@ function startServer(port) {
     process.exit(1);
   });
 
-  server.listen(port, host, () => {
-    const actualPort = server.address().port;
-    console.log(`Server is running on port ${actualPort}`);
-   
-verifySmtpConnection()
-  .then(() => console.log("SMTP verification completed"))
-  .catch((err) => console.error("SMTP verification failed:", err));
-  });
+  server.listen(port, host, () => {});
 }
-
 
 startServer(preferredPort);

@@ -88,43 +88,19 @@ function createTransporter() {
 async function verifySmtpConnection() {
   const status = getSmtpStatus();
   if (!status.configured) {
-    console.error("[consultation] SMTP NOT configured. Missing env vars:", status.missing.join(", "));
-    console.error("[consultation] Emails will NOT be sent until SMTP_HOST, SMTP_USER, SMTP_PASS are set on Render.");
     return { ok: false, error: `Missing: ${status.missing.join(", ")}` };
   }
 
   try {
     const transporter = createTransporter();
     await transporter.verify();
-    console.info("[consultation] SMTP connection verified:", {
-      host: status.host,
-      user: status.user,
-      from: status.from,
-      adminEmail: status.adminEmail,
-      provider: status.provider,
-    });
     return { ok: true };
   } catch (err) {
-    console.error("[consultation] SMTP verification failed:", err.message || err);
-    if (isGmailHost(config.smtp.host)) {
-      console.error(
-        "[consultation] Gmail tip: use an App Password (not your login password). " +
-          "Google Account -> Security -> 2-Step Verification -> App passwords."
-      );
-      console.error("[consultation] Gmail tip: SMTP_USER and SMTP_FROM must be the same Gmail address.");
-    }
     return { ok: false, error: err.message || String(err) };
   }
 }
 
 function logSendResult(label, info) {
-  console.info(`[consultation] ${label} email result:`, {
-    messageId: info.messageId,
-    accepted: info.accepted,
-    rejected: info.rejected,
-    response: info.response,
-  });
-
   if (info.rejected?.length) {
     throw new Error(`${label} email rejected by SMTP server: ${info.rejected.join(", ")}`);
   }
@@ -224,25 +200,16 @@ async function sendConsultationNotifications(payload) {
   if (results[0].status === "rejected") {
     const reason = results[0].reason?.message || String(results[0].reason);
     summary.errors.push({ target: "admin", error: reason });
-    console.error("[consultation] admin email failed:", reason);
   }
 
   if (results[1].status === "rejected") {
     const reason = results[1].reason?.message || String(results[1].reason);
     summary.errors.push({ target: "user", error: reason });
-    console.error("[consultation] user email failed:", reason);
   }
 
   if (summary.errors.length) {
-    console.error("[consultation] notification summary:", summary);
     throw new Error(summary.errors.map((entry) => `${entry.target}: ${entry.error}`).join(" | "));
   }
-
-  console.info("[consultation] notification emails sent:", {
-    appNo: payload.appNo,
-    admin: results[0].value?.messageId,
-    user: results[1].value?.messageId,
-  });
 
   return summary;
 }
