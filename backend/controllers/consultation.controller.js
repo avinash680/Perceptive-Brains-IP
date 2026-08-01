@@ -20,41 +20,19 @@ exports.submitConsultation = async (req, res) => {
     const appNo = generateAppNo();
     const payload = { appNo, name, email, phone, service, message };
 
-    res.status(200).json({ success: true, appNo });
-
-    Promise.allSettled([
+    // Await email delivery so that any SMTP configuration or connection error
+    // is caught and returned to the client rather than failing silently in the background.
+    await Promise.all([
       sendAdminEmail(payload),
       sendUserEmail(payload),
-    ])
-      .then((results) => {
-        const failures = results
-          .map((result, index) => {
-            if (result.status === "rejected") {
-              const errorMap = [
-                "admin-email",
-                "user-email",
-              ];
-              return {
-                error: errorMap[index],
-                detail: result.reason?.message || String(result.reason),
-              };
-            }
-            return null;
-          })
-          .filter(Boolean);
+    ]);
 
-        failures.forEach((f) => console.warn(`[consultation] ${f.error} failed:`, f.detail));
-      })
-      .catch((err) => {
-        console.error("[consultation] notification background error:", err);
-      });
-
-    return;
+    return res.status(200).json({ success: true, appNo });
   } catch (err) {
-    console.error("[consultation] unexpected error:", err);
+    console.error("[consultation] notification error:", err);
     return res.status(500).json({
       success: false,
-      error: "Something went wrong. Please try again.",
+      error: err.message || "Failed to send email notifications. Please check SMTP settings.",
     });
   }
 };
