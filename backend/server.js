@@ -23,8 +23,12 @@ function startServer(port) {
   server.listen(port, host, () => {
     const actualPort = server.address().port;
     console.log(`Server is running on port ${actualPort}`);
-    verifySmtpConnection();
+   
+verifySmtpConnection()
+  .then(() => console.log("SMTP verification completed"))
+  .catch((err) => console.error("SMTP verification failed:", err));
   });
 }
+
 
 startServer(preferredPort);
