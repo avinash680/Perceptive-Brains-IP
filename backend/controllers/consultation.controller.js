@@ -6,6 +6,21 @@ function generateAppNo() {
   return `IP-${year}-${rand}`;
 }
 
+function queueConsultationNotifications(payload) {
+  Promise.resolve()
+    .then(() => Promise.all([sendAdminEmail(payload), sendUserEmail(payload)]))
+    .then((results) => {
+      console.info("[consultation] notification emails sent:", {
+        appNo: payload.appNo,
+        admin: results[0]?.messageId,
+        user: results[1]?.messageId,
+      });
+    })
+    .catch((err) => {
+      console.error("[consultation] queued notification failed:", err);
+    });
+}
+
 exports.submitConsultation = async (req, res) => {
   try {
     const { name, email, phone, service, message } = req.body;
@@ -20,12 +35,7 @@ exports.submitConsultation = async (req, res) => {
     const appNo = generateAppNo();
     const payload = { appNo, name, email, phone, service, message };
 
-    // Await email delivery so that any SMTP configuration or connection error
-    // is caught and returned to the client rather than failing silently in the background.
-    await Promise.all([
-      sendAdminEmail(payload),
-      sendUserEmail(payload),
-    ]);
+    queueConsultationNotifications(payload);
 
     return res.status(200).json({ success: true, appNo });
   } catch (err) {

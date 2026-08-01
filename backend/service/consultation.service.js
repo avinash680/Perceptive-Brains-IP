@@ -1,23 +1,38 @@
 const nodemailer = require("nodemailer");
 const config = require("../config/env");
 
+let sharedTransporter = null;
+
 function createTransporter() {
   if (!config.smtp.host || !config.smtp.user || !config.smtp.pass || !config.smtp.from) {
     throw new Error("SMTP configuration is incomplete.");
   }
 
-  const port = Number.isFinite(config.smtp.port) ? config.smtp.port : 587;
+  if (sharedTransporter) {
+    return sharedTransporter;
+  }
 
-  return nodemailer.createTransport({
+  const port = Number.isFinite(config.smtp.port) ? config.smtp.port : 587;
+  const secure = port === 465;
+
+  sharedTransporter = nodemailer.createTransport({
     host: config.smtp.host,
     port,
-    secure: port === 465,
-    requireTLS: port !== 465,
+    secure,
+    requireTLS: !secure,
     auth: {
       user: config.smtp.user,
       pass: config.smtp.pass,
     },
+    pool: true,
+    maxConnections: 5,
+    maxMessages: 100,
+    connectionTimeout: 10000,
+    greetingTimeout: 10000,
+    socketTimeout: 20000,
   });
+
+  return sharedTransporter;
 }
 
 /**
