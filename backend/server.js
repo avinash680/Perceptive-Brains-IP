@@ -1,6 +1,7 @@
 const http = require("http");
 const app = require("./app");
 const config = require("./config/env");
+const { verifySmtpConnection } = require("./service/consultation.service");
 
 const server = http.createServer(app);
 
@@ -22,6 +23,7 @@ function startServer(port) {
   server.listen(port, host, () => {
     const actualPort = server.address().port;
     console.log(`Server is running on port ${actualPort}`);
+    verifySmtpConnection();
   });
 }
 

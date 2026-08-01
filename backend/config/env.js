@@ -2,6 +2,11 @@ const path = require("path");
 
 require("dotenv").config({ path: path.resolve(__dirname, "..", ".env") });
 
+function trim(value) {
+  if (value === undefined || value === null) return "";
+  return String(value).trim();
+}
+
 function getNumericEnv(name, fallback) {
   const value = process.env[name];
   if (value === undefined || value === null || value === "") return fallback;
@@ -9,29 +14,34 @@ function getNumericEnv(name, fallback) {
   return Number.isFinite(parsed) ? parsed : fallback;
 }
 
+/** Gmail app passwords are often copied with spaces — remove them. */
+function normalizeSmtpPass(value) {
+  return trim(value).replace(/\s+/g, "");
+}
+
+const smtpUser = trim(process.env.SMTP_USER);
+const smtpFrom = trim(process.env.SMTP_FROM) || smtpUser;
+
 module.exports = {
   port: getNumericEnv("PORT", 8080),
   frontendOrigin: process.env.FRONTEND_ORIGIN || "*",
 
   admin: {
-    email: process.env.ADMIN_EMAIL,
-    whatsapp: process.env.ADMIN_WHATSAPP_NUMBER, // e.g. +911234567890
+    email: trim(process.env.ADMIN_EMAIL) || smtpFrom,
+    whatsapp: trim(process.env.ADMIN_WHATSAPP_NUMBER),
   },
 
   smtp: {
-    host: process.env.SMTP_HOST,
+    host: trim(process.env.SMTP_HOST),
     port: getNumericEnv("SMTP_PORT", 587),
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
-    from: process.env.SMTP_FROM || process.env.SMTP_USER,
+    user: smtpUser,
+    pass: normalizeSmtpPass(process.env.SMTP_PASS),
+    from: smtpFrom,
   },
 
   twilio: {
-    accountSid: process.env.TWILIO_ACCOUNT_SID,
-    authToken: process.env.TWILIO_AUTH_TOKEN,
-    whatsappFrom: process.env.TWILIO_WHATSAPP_FROM, // e.g. whatsapp:+14155238886
+    accountSid: trim(process.env.TWILIO_ACCOUNT_SID),
+    authToken: trim(process.env.TWILIO_AUTH_TOKEN),
+    whatsappFrom: trim(process.env.TWILIO_WHATSAPP_FROM),
   },
 };
-
-
-

@@ -1,7 +1,10 @@
 const express = require("express");
 const router = express.Router();
 
-const { submitConsultation } = require("../controllers/consultation.controller");
+const {
+  submitConsultation,
+  getEmailHealth,
+} = require("../controllers/consultation.controller");
 
 router.get("/", (req, res) => {
   return res.status(200).json({
@@ -9,6 +12,8 @@ router.get("/", (req, res) => {
     message: "Consultation endpoint is active.",
   });
 });
+
+router.get("/email-health", getEmailHealth);
 
 router.post("/", submitConsultation);
 

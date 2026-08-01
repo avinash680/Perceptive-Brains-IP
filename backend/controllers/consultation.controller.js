@@ -1,4 +1,8 @@
-const { sendAdminEmail, sendUserEmail } = require("../service/consultation.service");
+const {
+  sendConsultationNotifications,
+  getSmtpStatus,
+  verifySmtpConnection,
+} = require("../service/consultation.service");
 
 function generateAppNo() {
   const year = new Date().getFullYear();
@@ -7,33 +11,62 @@ function generateAppNo() {
 }
 
 function queueConsultationNotifications(payload) {
-  Promise.resolve()
-    .then(() => Promise.all([sendAdminEmail(payload), sendUserEmail(payload)]))
-    .then((results) => {
-      console.info("[consultation] notification emails sent:", {
-        appNo: payload.appNo,
-        admin: results[0]?.messageId,
-        user: results[1]?.messageId,
-      });
-    })
-    .catch((err) => {
-      console.error("[consultation] queued notification failed:", err);
-    });
+  sendConsultationNotifications(payload).catch((err) => {
+    console.error("[consultation] queued notification failed:", err.message || err);
+  });
 }
+
+exports.getEmailHealth = async (_req, res) => {
+  const status = getSmtpStatus();
+
+  if (!status.configured) {
+    return res.status(503).json({
+      success: false,
+      ...status,
+      message: "SMTP is not configured. Set SMTP_HOST, SMTP_USER, SMTP_PASS on Render.",
+    });
+  }
+
+  const verification = await verifySmtpConnection();
+  return res.status(verification.ok ? 200 : 503).json({
+    success: verification.ok,
+    ...status,
+    verified: verification.ok,
+    error: verification.error || null,
+  });
+};
 
 exports.submitConsultation = async (req, res) => {
   try {
     const { name, email, phone, service, message } = req.body;
+    const trimmedName = String(name || "").trim();
+    const trimmedEmail = String(email || "").trim();
 
-    if (!name || !email) {
+    if (!trimmedName || !trimmedEmail) {
       return res.status(400).json({
         success: false,
         error: "Name and email are required.",
       });
     }
 
+    const smtpStatus = getSmtpStatus();
+    if (!smtpStatus.configured) {
+      console.error("[consultation] submission received but SMTP is not configured:", smtpStatus.missing);
+      return res.status(503).json({
+        success: false,
+        error: "Email service is not configured on the server. Please contact support.",
+      });
+    }
+
     const appNo = generateAppNo();
-    const payload = { appNo, name, email, phone, service, message };
+    const payload = {
+      appNo,
+      name: trimmedName,
+      email: trimmedEmail,
+      phone: String(phone || "").trim(),
+      service: String(service || "").trim(),
+      message: String(message || "").trim(),
+    };
 
     queueConsultationNotifications(payload);
 
@@ -42,7 +75,7 @@ exports.submitConsultation = async (req, res) => {
     console.error("[consultation] notification error:", err);
     return res.status(500).json({
       success: false,
-      error: err.message || "Failed to send email notifications. Please check SMTP settings.",
+      error: err.message || "Failed to process consultation request.",
     });
   }
 };
