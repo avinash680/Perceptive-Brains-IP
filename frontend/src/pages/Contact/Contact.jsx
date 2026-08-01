@@ -1,5 +1,11 @@
 import React, { useState } from "react";
 import {
+  getConsultationErrorMessage,
+  getConsultationUrl,
+  submitConsultation,
+} from "../../api/consultation";
+import { useConsultationWarmup } from "../../hooks/useConsultationWarmup";
+import {
   User,
   Mail,
   Phone,
@@ -48,10 +54,6 @@ const initialForm = {
   message: "",
 };
 
-import { getApiBase } from "../../config/api";
-
-const getApiUrl = () => `${getApiBase().replace(/\/$/, "")}/consultation`;
-
 const Field = ({ icon: Icon, label, ...props }) => (
   <label className="block">
     <span className="ip-mono mb-1 block text-[9.5px] tracking-[0.13em] text-stone-500">
@@ -68,6 +70,7 @@ const Field = ({ icon: Icon, label, ...props }) => (
 );
 
 export default function ConsultationCompact() {
+  useConsultationWarmup();
   const [form, setForm] = useState(initialForm);
   const [submitted, setSubmitted] = useState(false);
   const [appNo, setAppNo] = useState("");
@@ -96,63 +99,24 @@ export default function ConsultationCompact() {
     setLoading(true);
     setErrorMsg("");
 
-    const controller = new AbortController();
-    const timeoutId = window.setTimeout(() => controller.abort(), 15000);
     let url = null;
 
     try {
-      try {
-        url = getApiUrl();
-      } catch (e) {
-        throw new Error("Failed to resolve API URL: " + (e.message || e));
-      }
-
-      // Diagnostic log to help identify wrong endpoint in production
+      url = getConsultationUrl();
       console.log("[contact] submitting to", url, "payload:", JSON.stringify(form));
 
-      const start = Date.now();
-      const res = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
-        signal: controller.signal,
-      });
+      const { status, duration, data } = await submitConsultation(form);
 
-      const duration = Date.now() - start;
-      const raw = await res.text();
-      let data = null;
-      try {
-        data = JSON.parse(raw);
-      } catch (e) {
-        data = raw;
-      }
+      console.log("[contact] response", { status, duration: `${duration}ms`, body: data });
+      setLastResponse({ status, duration, body: data });
 
-      console.log('[contact] response', { status: res.status, duration: `${duration}ms`, body: data });
-      setLastResponse({ status: res.status, duration, body: data });
-
-      const isSuccessResponse = res.ok;
-
-      if (!isSuccessResponse) {
-        const errText = typeof data === "string" ? data : JSON.stringify(data);
-        throw new Error(data?.error || `Unexpected response (${res.status}): ${errText}`);
-      }
-
-      const successPayload = typeof data === "object" && data !== null ? data : {};
-      setAppNo(successPayload.appNo || "PENDING");
+      setAppNo(data.appNo || "PENDING");
       setSubmitted(true);
       setLastResponse(null);
     } catch (err) {
-      // Network failure (server down, CORS, no internet) vs. thrown app error
-      const message =
-        err.name === "AbortError"
-          ? "The server took too long to respond. Please try again in a moment."
-          : err instanceof TypeError
-            ? "Could not reach the server. Please check your connection and try again."
-            : err.message || "Something went wrong. Please try again.";
-      setErrorMsg(url ? `${message} (endpoint: ${url})` : message);
-      setSubmitted(false); // never show success on failure
+      setErrorMsg(getConsultationErrorMessage(err, url));
+      setSubmitted(false);
     } finally {
-      window.clearTimeout(timeoutId);
       setLoading(false);
     }
   };

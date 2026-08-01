@@ -1,6 +1,12 @@
 import { Link } from "react-router-dom";
 import { useState } from "react";
 import {
+  getConsultationErrorMessage,
+  getConsultationUrl,
+  submitConsultation,
+} from "../../api/consultation";
+import { useConsultationWarmup } from "../../hooks/useConsultationWarmup";
+import {
   ArrowRight,
   ScrollText,
   Globe2,
@@ -16,10 +22,6 @@ import {
   Loader2,
 } from "lucide-react";
 import heroImage from "../../assets/hero.jpg";
-
-import { getApiBase } from "../../config/api";
-
-const getApiUrl = () => `${getApiBase().replace(/\/$/, "")}/consultation`;
 
 const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
@@ -74,6 +76,7 @@ function Field({ icon: Icon, label, type, placeholder, value, onChange }) {
 }
 
 export default function Hero() {
+  useConsultationWarmup();
   const [form, setForm] = useState({
     name: "",
     phone: "",
@@ -105,61 +108,24 @@ export default function Hero() {
     setLoading(true);
     setErrorMsg("");
 
-    const controller = new AbortController();
-    const timeoutId = window.setTimeout(() => controller.abort(), 15000);
     let url = null;
 
     try {
-      try {
-        url = getApiUrl();
-      } catch (e) {
-        throw new Error("Failed to resolve API URL: " + (e.message || e));
-      }
+      url = getConsultationUrl();
+      console.log("[hero] submitting to", url, "payload:", JSON.stringify(form));
 
-      console.log('[hero] submitting to', url, 'payload:', JSON.stringify(form));
+      const { status, duration, data } = await submitConsultation(form);
 
-      const start = Date.now();
-      const res = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
-        signal: controller.signal,
-      });
+      console.log("[hero] response", { status, duration: `${duration}ms`, body: data });
+      setLastResponse({ status, duration, body: data });
 
-      const duration = Date.now() - start;
-      const raw = await res.text();
-      let data = null;
-      try {
-        data = JSON.parse(raw);
-      } catch (e) {
-        data = raw;
-      }
-
-      console.log('[hero] response', { status: res.status, duration: `${duration}ms`, body: data });
-      setLastResponse({ status: res.status, duration, body: data });
-
-      const isSuccessResponse = res.ok;
-
-      if (!isSuccessResponse) {
-        const errText = typeof data === "string" ? data : JSON.stringify(data);
-        throw new Error(data?.error || `Unexpected response (${res.status}): ${errText}`);
-      }
-
-      const successPayload = typeof data === "object" && data !== null ? data : {};
-      setAppNo(successPayload.appNo || "PENDING");
+      setAppNo(data.appNo || "PENDING");
       setSubmitted(true);
       setLastResponse(null);
     } catch (err) {
-      const message =
-        err.name === "AbortError"
-          ? "The server took too long to respond. Please try again in a moment."
-          : err instanceof TypeError
-          ? "Could not reach the server. Please check your connection and try again."
-          : err.message || "Something went wrong. Please try again.";
-      setErrorMsg(url ? `${message} (endpoint: ${url})` : message);
+      setErrorMsg(getConsultationErrorMessage(err, url));
       setSubmitted(false);
     } finally {
-      window.clearTimeout(timeoutId);
       setLoading(false);
     }
   };

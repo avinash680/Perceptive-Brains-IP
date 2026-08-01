@@ -1,5 +1,11 @@
 import React, { useState } from "react";
 import {
+  getConsultationErrorMessage,
+  getConsultationUrl,
+  submitConsultation,
+} from "../../../api/consultation";
+import { useConsultationWarmup } from "../../../hooks/useConsultationWarmup";
+import {
   User,
   Mail,
   Phone,
@@ -14,10 +20,6 @@ import {
 } from "lucide-react";
 
 
-
-import { getApiBase } from "../../../config/api";
-
-const getApiUrl = () => `${getApiBase().replace(/\/$/, "")}/consultation`;
 
 const Field = ({ icon: Icon, label, ...props }) => (
   <label className="block">
@@ -43,6 +45,7 @@ const initialForm = {
 };
 
 export default function ContactForm({ serviceOptions }) {
+  useConsultationWarmup();
   const [form, setForm] = useState(initialForm);
   const [submitted, setSubmitted] = useState(false);
   const [appNo, setAppNo] = useState("");
@@ -70,62 +73,24 @@ export default function ContactForm({ serviceOptions }) {
     setLoading(true);
     setErrorMsg("");
 
-    const controller = new AbortController();
-    const timeoutId = window.setTimeout(() => controller.abort(), 15000);
     let url = null;
 
     try {
-      try {
-        url = getApiUrl();
-      } catch (e) {
-        throw new Error("Failed to resolve API URL: " + (e.message || e));
-      }
+      url = getConsultationUrl();
+      console.log("[contact-form] submitting to", url, "payload:", JSON.stringify(form));
 
-      // Diagnostic log to help identify wrong endpoint in production
-      console.log('[contact-form] submitting to', url, 'payload:', JSON.stringify(form));
+      const { status, duration, data } = await submitConsultation(form);
 
-      const start = Date.now();
-      const res = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
-        signal: controller.signal,
-      });
+      console.log("[contact-form] response", { status, duration: `${duration}ms`, body: data });
+      setLastResponse({ status, duration, body: data });
 
-      const duration = Date.now() - start;
-      const raw = await res.text();
-      let data = null;
-      try {
-        data = JSON.parse(raw);
-      } catch (e) {
-        data = raw;
-      }
-
-      console.log('[contact-form] response', { status: res.status, duration: `${duration}ms`, body: data });
-      setLastResponse({ status: res.status, duration, body: data });
-
-      const isSuccessResponse = res.ok;
-
-      if (!isSuccessResponse) {
-        const errText = typeof data === "string" ? data : JSON.stringify(data);
-        throw new Error(data?.error || `Unexpected response (${res.status}): ${errText}`);
-      }
-
-      const successPayload = typeof data === "object" && data !== null ? data : {};
-      setAppNo(successPayload.appNo || "PENDING");
+      setAppNo(data.appNo || "PENDING");
       setSubmitted(true);
       setLastResponse(null);
     } catch (err) {
-      const message =
-        err.name === "AbortError"
-          ? "The server took too long to respond. Please try again in a moment."
-          : err instanceof TypeError
-            ? "Could not reach the server. Please check your connection and try again."
-            : err.message || "Something went wrong. Please try again.";
-      setErrorMsg(url ? `${message} (endpoint: ${url})` : message);
+      setErrorMsg(getConsultationErrorMessage(err, url));
       setSubmitted(false);
     } finally {
-      window.clearTimeout(timeoutId);
       setLoading(false);
     }
   };
