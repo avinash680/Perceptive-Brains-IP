@@ -83,10 +83,9 @@ export default function ContactForm({ serviceOptions }) {
 
       console.log("[contact-form] response", { status, duration: `${duration}ms`, body: data });
       setLastResponse({ status, duration, body: data });
-
       setAppNo(data.appNo || "PENDING");
       setSubmitted(true);
-      setLastResponse(null);
+      setForm(initialForm);
     } catch (err) {
       setErrorMsg(getConsultationErrorMessage(err, url));
       setSubmitted(false);

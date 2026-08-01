@@ -154,7 +154,7 @@ export default function WebServices() {
             Perceptive Brains IP
           </span>
 
-          <h2 className="mt-6 font-serif text-4xl font-semibold uppercase leading-tight tracking-wide text-white sm:text-5xl lg:text-6xl">
+          <h2 className="mt-6 font-serif text-3xl font-semibold uppercase leading-tight tracking-wide text-white sm:text-4xl lg:text-5xl">
             Custom Web{" "}
             <span className="bg-gradient-to-r from-[#E8C978] via-[#C69A32] to-[#9c7a26] bg-clip-text text-transparent">
               Development
@@ -190,6 +190,10 @@ export default function WebServices() {
             </Link>
             <span className="absolute inset-0 -translate-x-full bg-white/30 transition-transform duration-500 group-hover:translate-x-0" />
           </motion.div>
+
+          <p className="mt-3 text-xs font-medium uppercase tracking-[0.2em] text-white/50">
+            Projects start at <span className="text-[#E8C978]">₹7,500</span>
+          </p>
         </motion.div>
 
         {/* Feature Grid */}

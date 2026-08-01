@@ -18,6 +18,7 @@ import {
   Globe2,
   PackagePlus,
   Package,
+  User,
 } from "lucide-react";
 
 /* ============================================================================
@@ -30,6 +31,24 @@ import {
    not present in the source document — flagged as "Indicative" / "Custom
    Quote" and should be replaced with real numbers before going live.
 ============================================================================ */
+
+/* ---------------------------- Applicant type -------------------------------
+   NOTE: Government fees for patents/designs/trademarks in India vary by
+   applicant category (e.g. natural person / startup / small entity pay a
+   reduced govt. fee vs. a large entity). This selector currently only
+   captures the choice — hook it into the per-service govt fee calculation
+   once the category-wise fee schedule is finalised.
+----------------------------------------------------------------------------- */
+const ENTITY_TYPES = [
+  { id: "individual", label: "Individual" },
+  { id: "startup", label: "Startup" },
+  { id: "public_ltd", label: "Public Ltd" },
+  { id: "private_limited", label: "Private Limited" },
+  { id: "small_entity", label: "Small Entity" },
+  { id: "education", label: "Education" },
+  { id: "educational_institution", label: "Educational Institution" },
+  { id: "natural_person", label: "Natural Person" },
+];
 
 const CATEGORIES = [
   { id: "patents", label: "Patents", icon: Layers, package: 30000, packageLabel: "Search to Grant" },
@@ -367,6 +386,47 @@ const categoryTotal = (catId, selectedIds) =>
   SERVICES[catId].reduce((sum, s) => (selectedIds[s.id] ? sum + totalFee(s) : sum), 0);
 const categoryCount = (catId, selectedIds) =>
   SERVICES[catId].reduce((sum, s) => (selectedIds[s.id] ? sum + 1 : sum), 0);
+
+/* --------------------------- Applicant type selector ------------------------ */
+function EntityTypeSelector({ selected, onSelect }) {
+  return (
+    <div className="mb-5">
+      <div className="text-[11px] font-semibold uppercase tracking-wider text-[#0B2545]/50 mb-2 flex items-center gap-1.5">
+        <User className="h-3.5 w-3.5" />
+        Applicant Type
+      </div>
+      <div className="flex flex-wrap gap-2">
+        {ENTITY_TYPES.map((et) => {
+          const checked = selected === et.id;
+          return (
+            <button
+              key={et.id}
+              type="button"
+              role="checkbox"
+              aria-checked={checked}
+              aria-label={et.label}
+              onClick={() => onSelect(checked ? null : et.id)}
+              className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg border text-xs font-medium transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0F9B8E] ${
+                checked
+                  ? "bg-[#0F9B8E]/10 border-[#0F9B8E] text-[#0B2545]"
+                  : "bg-white border-black/10 text-[#0B2545]/70 hover:border-[#0F9B8E]/50"
+              }`}
+            >
+              <span
+                className={`h-4 w-4 rounded-[4px] border-2 grid place-items-center shrink-0 transition-colors ${
+                  checked ? "bg-[#0F9B8E] border-[#0F9B8E]" : "border-black/25"
+                }`}
+              >
+                {checked && <Check className="h-3 w-3 text-white" strokeWidth={3} />}
+              </span>
+              {et.label}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
 
 /* ------------------------------ Category tabs ------------------------------ */
 function CategoryTabs({ active, setActive, selectedIds }) {
@@ -740,6 +800,7 @@ function SummaryPanel({ selectedServices, packageCategories, onClear, onDownload
 
 /* ----------------------------------- Root ------------------------------------ */
 export default function IPFeeCalculator() {
+  const [entityType, setEntityType] = useState(null);
   const [category, setCategory] = useState("patents");
   const [selectedIds, setSelectedIds] = useState({});
   const [expandedId, setExpandedId] = useState(null);
@@ -820,6 +881,8 @@ export default function IPFeeCalculator() {
       )
       .join("");
 
+    const entityLabel = ENTITY_TYPES.find((e) => e.id === entityType)?.label;
+
     const quoteHtml = `
       <html><head><title>Perceptive Brains IP — Fee Estimate</title>
       <style>
@@ -864,7 +927,9 @@ export default function IPFeeCalculator() {
         <div class="header-row">
           <div>
             <h1>Perceptive Brains IP</h1>
-            <p class="sub">Fee Estimate &middot; Generated ${new Date().toLocaleDateString()}</p>
+            <p class="sub">Fee Estimate &middot; Generated ${new Date().toLocaleDateString()}${
+              entityLabel ? ` &middot; Applicant Type: ${entityLabel}` : ""
+            }</p>
           </div>
           <img class="header-logo" src="${pbipLogo}" alt="Perceptive Brains IP logo" />
         </div>
@@ -892,6 +957,8 @@ export default function IPFeeCalculator() {
 
   return (
     <div className="w-full font-sans">
+      <EntityTypeSelector selected={entityType} onSelect={setEntityType} />
+
       {(catMeta.indicative || catMeta.customQuote) && (
         <div className="mb-4 flex items-center gap-2 text-xs font-medium text-[#C9A227] bg-[#C9A227]/10 border border-[#C9A227]/25 rounded-lg px-3.5 py-2.5">
           {catMeta.indicative

@@ -65,6 +65,10 @@ export async function submitConsultation(form) {
         throw new Error(data?.error || `Unexpected response (${res.status}): ${errText}`);
       }
 
+      if (typeof data === "object" && data !== null && data.success === false) {
+        throw new Error(data.error || "Server returned an unsuccessful response.");
+      }
+
       return {
         status: res.status,
         duration,

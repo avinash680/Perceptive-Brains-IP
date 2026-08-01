@@ -112,7 +112,7 @@ export default function ConsultationCompact() {
 
       setAppNo(data.appNo || "PENDING");
       setSubmitted(true);
-      setLastResponse(null);
+      setForm(initialForm);
     } catch (err) {
       setErrorMsg(getConsultationErrorMessage(err, url));
       setSubmitted(false);

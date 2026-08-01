@@ -55,6 +55,14 @@ const SERVICE_OPTIONS = [
   "Licensing & consultation",
 ];
 
+const initialForm = {
+  name: "",
+  phone: "",
+  email: "",
+  service: "",
+  message: "",
+};
+
 function Field({ icon: Icon, label, type, placeholder, value, onChange }) {
   return (
     <label className="block">
@@ -77,13 +85,7 @@ function Field({ icon: Icon, label, type, placeholder, value, onChange }) {
 
 export default function Hero() {
   useConsultationWarmup();
-  const [form, setForm] = useState({
-    name: "",
-    phone: "",
-    email: "",
-    service: "",
-    message: "",
-  });
+  const [form, setForm] = useState(initialForm);
   const [submitted, setSubmitted] = useState(false);
   const [appNo, setAppNo] = useState("");
   const [loading, setLoading] = useState(false);
@@ -121,7 +123,7 @@ export default function Hero() {
 
       setAppNo(data.appNo || "PENDING");
       setSubmitted(true);
-      setLastResponse(null);
+      setForm(initialForm);
     } catch (err) {
       setErrorMsg(getConsultationErrorMessage(err, url));
       setSubmitted(false);
@@ -193,6 +195,9 @@ export default function Hero() {
                 className="rounded-full border border-gray-600 px-6 py-3 text-sm font-medium text-white transition-colors duration-200 hover:border-white hover:bg-white hover:text-black"
               >
                 Explore services
+              </Link>
+              <Link to="/services/patent-drafting-filing#fees" className="rounded-full border border-gray-600 px-6 py-3 text-sm font-medium text-white transition-colors duration-200 hover:border-white hover:bg-white hover:text-black">
+                Fees Schedule
               </Link>
             </div>
 
