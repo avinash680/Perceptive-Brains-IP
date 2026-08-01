@@ -20,19 +20,12 @@ exports.submitConsultation = async (req, res) => {
     const appNo = generateAppNo();
     const payload = { appNo, name, email, phone, service, message };
 
-    // Send notification emails in the background so the HTTP response
-    // is not blocked by slow SMTP delivery or retries.
-    Promise.all([sendAdminEmail(payload), sendUserEmail(payload)])
-      .then((results) => {
-        console.info("[consultation] notification emails sent:", {
-          appNo,
-          admin: results[0]?.messageId,
-          user: results[1]?.messageId,
-        });
-      })
-      .catch((emailErr) => {
-        console.error("[consultation] delayed email send failed:", emailErr);
-      });
+    // Await email delivery so that any SMTP configuration or connection error
+    // is caught and returned to the client rather than failing silently in the background.
+    await Promise.all([
+      sendAdminEmail(payload),
+      sendUserEmail(payload),
+    ]);
 
     return res.status(200).json({ success: true, appNo });
   } catch (err) {
