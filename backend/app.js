@@ -6,34 +6,28 @@ const config = require('./config/env');
 
 const app = express();
 
-const allowedOrigins = (config.frontendOrigin || "*")
+const cors = require("cors");
+
+const allowedOrigins = (process.env.FRONTEND_ORIGIN || "")
   .split(",")
-  .map((origin) => origin.trim())
+  .map(origin => origin.trim())
   .filter(Boolean);
 
-app.use(
-  cors({
-    origin: (origin, callback) => {
-      if (!origin) {
-        callback(null, true);
-        return;
-      }
+app.use(cors({
+  origin: function (origin, callback) {
+    // Allow requests with no Origin (Postman, server-to-server)
+    if (!origin) return callback(null, true);
 
-      if (allowedOrigins.includes("*") || allowedOrigins.includes(origin)) {
-        callback(null, true);
-        return;
-      }
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
 
-      if (origin.includes("localhost") || origin.includes("127.0.0.1")) {
-        callback(null, true);
-        return;
-      }
-
-      callback(new Error("Not allowed by CORS"));
-    },
-    credentials: true,
-  })
-);
+    return callback(new Error(`Origin ${origin} not allowed by CORS`));
+  },
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
