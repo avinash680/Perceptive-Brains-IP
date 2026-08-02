@@ -1,4 +1,4 @@
-const { sendAdminNotification, sendUserConfirmation } = require("../service/email.service");
+const { sendAdminNotification, sendUserConfirmation, withTimeout } = require("../service/email.service");
 const { sendAdminWhatsAppAlert, sendUserWhatsAppConfirmation } = require("../service/whatsapp.service");
 const { generateAppNo } = require("../service/app.no.service");
 
@@ -36,30 +36,38 @@ async function submitConsultation(req, res) {
     const appNo = generateAppNo();
     const submittedAt = new Date();
 
-    // 3. Send email to admin + user at the same time
+    // 3. Send email to admin + user at the same time with a short timeout
     const [adminEmailResult, userEmailResult] = await Promise.allSettled([
-      sendAdminNotification({ name, email, phone, service, message, appNo, submittedAt }),
-      sendUserConfirmation({ name, email, service, appNo, submittedAt }),
+      withTimeout(
+        () => sendAdminNotification({ name, email, phone, service, message, appNo, submittedAt }),
+        5000,
+        null
+      ),
+      withTimeout(
+        () => sendUserConfirmation({ name, email, service, appNo, submittedAt }),
+        5000,
+        null
+      ),
     ]);
 
     // Admin not being notified is the critical failure - stop here.
-    if (adminEmailResult.status === "rejected") {
-      console.error("Admin email failed:", adminEmailResult.reason);
+    if (adminEmailResult.status === "rejected" || adminEmailResult.value === null) {
+      console.error("Admin email failed or timed out:", adminEmailResult.reason || "timeout");
       return res.status(502).json({
         success: false,
         error: "We could not process your application right now. Please try again shortly.",
       });
     }
 
-    if (userEmailResult.status === "rejected") {
+    if (userEmailResult.status === "rejected" || userEmailResult.value === null) {
       // Admin already has it, so the application is still valid - just log it.
-      console.error("User confirmation email failed:", userEmailResult.reason);
+      console.error("User confirmation email failed or timed out:", userEmailResult.reason || "timeout");
     }
 
     // 4. Send WhatsApp to admin + user (optional - only runs if configured)
     const [adminWaResult, userWaResult] = await Promise.allSettled([
-      sendAdminWhatsAppAlert({ name, phone, service, appNo }),
-      sendUserWhatsAppConfirmation({ name, phone, appNo }),
+      withTimeout(() => sendAdminWhatsAppAlert({ name, phone, service, appNo }), 3000, null),
+      withTimeout(() => sendUserWhatsAppConfirmation({ name, phone, appNo }), 3000, null),
     ]);
 
     if (adminWaResult.status === "rejected") {

@@ -18,6 +18,23 @@ const escapeHtml = (str = "") =>
 const formatDate = (date) =>
   date.toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" });
 
+function withTimeout(operation, timeoutMs, fallbackValue) {
+  return new Promise((resolve) => {
+    const timer = setTimeout(() => resolve(fallbackValue), timeoutMs);
+
+    Promise.resolve()
+      .then(operation)
+      .then((value) => {
+        clearTimeout(timer);
+        resolve(value);
+      })
+      .catch(() => {
+        clearTimeout(timer);
+        resolve(fallbackValue);
+      });
+  });
+}
+
 async function sendAdminNotification({ name, email, phone, service, message, appNo, submittedAt }) {
   const adminEmail = process.env.ADMIN_EMAIL || process.env.GMAIL_USER;
 
@@ -66,4 +83,4 @@ async function sendUserConfirmation({ name, email, service, appNo, submittedAt }
   });
 }
 
-module.exports = { sendAdminNotification, sendUserConfirmation, transporter };
+module.exports = { sendAdminNotification, sendUserConfirmation, transporter, withTimeout };
