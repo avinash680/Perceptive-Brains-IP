@@ -52,6 +52,10 @@ test("consultation warmup endpoint is served under /api/consultation", async () 
     const response = await fetch("http://127.0.0.1:5011/api/consultation/warmup");
     assert.equal(response.status, 200);
     assert.deepEqual(await response.json(), { status: "warm" });
+
+    const legacyResponse = await fetch("http://127.0.0.1:5011/consultation/warmup");
+    assert.equal(legacyResponse.status, 200);
+    assert.deepEqual(await legacyResponse.json(), { status: "warm" });
   } finally {
     server.kill("SIGTERM");
     await once(server, "exit").catch(() => {});

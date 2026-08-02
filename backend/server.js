@@ -52,6 +52,7 @@ const consultationLimiter = rateLimit({
 });
 
 app.use("/api/consultation", consultationLimiter, consultationRouter);
+app.use("/consultation", consultationLimiter, consultationRouter);
 
 app.get("/health", (req, res) => res.json({ status: "ok" }));
 
