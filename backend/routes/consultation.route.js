@@ -1,20 +1,20 @@
 const express = require("express");
 const router = express.Router();
+const consultationController = require("../controllers/consultation.controller");
 
-const {
-  submitConsultation,
-  getEmailHealth,
-} = require("../controllers/consultation.controller");
+/**
+ * ROUTES
+ * ------
+ * This file ONLY maps "HTTP method + path" to a controller function.
+ * No business logic here on purpose - if you're scrolling through this file
+ * looking for "how are emails sent", you're in the wrong file; that's in
+ * controllers/consultationController.js and services/*.js
+ */
 
-router.get("/", (req, res) => {
-  return res.status(200).json({
-    success: true,
-    message: "Consultation endpoint is active.",
-  });
-});
+// Pinged by the frontend on mount, just to "wake up" the server early
+router.get("/warmup", consultationController.warmup);
 
-router.get("/email-health", getEmailHealth);
-
-router.post("/", submitConsultation);
+// Main form submission endpoint
+router.post("/", consultationController.submitConsultation);
 
 module.exports = router;

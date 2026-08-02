@@ -1,81 +1,86 @@
-const {
-  sendConsultationNotifications,
-  getSmtpStatus,
-  verifySmtpConnection,
-} = require("../service/consultation.service");
+const { sendAdminNotification, sendUserConfirmation } = require("../service/email.service");
+const { sendAdminWhatsAppAlert, sendUserWhatsAppConfirmation } = require("../service/whatsapp.service");
+const { generateAppNo } = require("../service/app.no.service");
 
-function generateAppNo() {
-  const year = new Date().getFullYear();
-  const rand = Math.floor(1000 + Math.random() * 9000);
-  return `IP-${year}-${rand}`;
+const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
+/**
+ * CONTROLLER
+ * ----------
+ * This is where the actual "what should happen" logic lives for each route.
+ * It does NOT know how emails/WhatsApp messages are actually sent - it just
+ * calls the services that know how, and decides what to send back to the
+ * client. Keeping this separate from routes.js means routes.js stays a
+ * simple, readable list of "this URL -> this function".
+ */
+
+// GET /api/consultation/warmup
+function warmup(req, res) {
+  res.status(200).json({ status: "warm" });
 }
 
-function queueConsultationNotifications(payload) {
-  sendConsultationNotifications(payload).catch((err) => {
-    console.error("[consultation] queued notification failed:", err.message || err);
-  });
-}
-
-exports.getEmailHealth = async (_req, res) => {
-  const status = getSmtpStatus();
-
-  if (!status.configured) {
-    return res.status(503).json({
-      success: false,
-      ...status,
-      message: "SMTP is not configured. Set SMTP_HOST, SMTP_USER, SMTP_PASS on Render.",
-    });
-  }
-
-  const verification = await verifySmtpConnection();
-  return res.status(verification.ok ? 200 : 503).json({
-    success: verification.ok,
-    ...status,
-    verified: verification.ok,
-    error: verification.error || null,
-  });
-};
-
-exports.submitConsultation = async (req, res) => {
+// POST /api/consultation
+async function submitConsultation(req, res) {
   try {
-    const { name, email, phone, service, message } = req.body;
-    const trimmedName = String(name || "").trim();
-    const trimmedEmail = String(email || "").trim();
+    const { name, email, phone, service, message } = req.body || {};
 
-    if (!trimmedName || !trimmedEmail) {
-      return res.status(400).json({
-        success: false,
-        error: "Name and email are required.",
-      });
+    // 1. Validate input
+    if (!name || !name.trim()) {
+      return res.status(400).json({ success: false, error: "Full name is required." });
+    }
+    if (!email || !isValidEmail(email)) {
+      return res.status(400).json({ success: false, error: "A valid email address is required." });
     }
 
-    const smtpStatus = getSmtpStatus();
-    if (!smtpStatus.configured) {
-      console.error("[consultation] submission received but SMTP is not configured:", smtpStatus.missing);
-      return res.status(503).json({
-        success: false,
-        error: "Email service is not configured on the server. Please contact support.",
-      });
-    }
-
+    // 2. Generate the application number (no database needed)
     const appNo = generateAppNo();
-    const payload = {
+    const submittedAt = new Date();
+
+    // 3. Send email to admin + user at the same time
+    const [adminEmailResult, userEmailResult] = await Promise.allSettled([
+      sendAdminNotification({ name, email, phone, service, message, appNo, submittedAt }),
+      sendUserConfirmation({ name, email, service, appNo, submittedAt }),
+    ]);
+
+    // Admin not being notified is the critical failure - stop here.
+    if (adminEmailResult.status === "rejected") {
+      console.error("Admin email failed:", adminEmailResult.reason);
+      return res.status(502).json({
+        success: false,
+        error: "We could not process your application right now. Please try again shortly.",
+      });
+    }
+
+    if (userEmailResult.status === "rejected") {
+      // Admin already has it, so the application is still valid - just log it.
+      console.error("User confirmation email failed:", userEmailResult.reason);
+    }
+
+    // 4. Send WhatsApp to admin + user (optional - only runs if configured)
+    const [adminWaResult, userWaResult] = await Promise.allSettled([
+      sendAdminWhatsAppAlert({ name, phone, service, appNo }),
+      sendUserWhatsAppConfirmation({ name, phone, appNo }),
+    ]);
+
+    if (adminWaResult.status === "rejected") {
+      console.error("Admin WhatsApp alert failed:", adminWaResult.reason?.response?.data || adminWaResult.reason);
+    }
+    if (userWaResult.status === "rejected") {
+      console.error("User WhatsApp confirmation failed:", userWaResult.reason?.response?.data || userWaResult.reason);
+    }
+
+    // 5. Respond to the client
+    return res.status(200).json({
+      success: true,
       appNo,
-      name: trimmedName,
-      email: trimmedEmail,
-      phone: String(phone || "").trim(),
-      service: String(service || "").trim(),
-      message: String(message || "").trim(),
-    };
-
-    queueConsultationNotifications(payload);
-
-    return res.status(200).json({ success: true, appNo });
-  } catch (err) {
-    console.error("[consultation] notification error:", err);
-    return res.status(500).json({
-      success: false,
-      error: err.message || "Failed to process consultation request.",
+      userEmailSent: userEmailResult.status === "fulfilled",
+      adminWhatsAppSent: adminWaResult.status === "fulfilled" && adminWaResult.value !== null,
+      userWhatsAppSent: userWaResult.status === "fulfilled" && userWaResult.value !== null,
     });
+  } catch (err) {
+    console.error("Consultation submission error:", err);
+    return res.status(500).json({ success: false, error: "Something went wrong. Please try again." });
   }
-};
+}
+
+module.exports = { warmup, submitConsultation };

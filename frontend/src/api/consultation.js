@@ -1,93 +1,63 @@
-import { getApiBase } from "../config/api";
-
-const CONSULTATION_PATH = "/consultation";
-const REQUEST_TIMEOUT_MS = 45000;
-const MAX_ATTEMPTS = 2;
+// Base URL of your Express backend. Set VITE_API_URL in your .env for
+// production (e.g. https://api.yourfirm.com). Falls back to localhost for dev.
+const API_BASE_URL =
+  (typeof import.meta !== "undefined" && import.meta.env && import.meta.env.VITE_API_URL) ||
+  "http://localhost:5000";
 
 export function getConsultationUrl() {
-  return `${getApiBase().replace(/\/$/, "")}${CONSULTATION_PATH}`;
+  return `${API_BASE_URL}/api/consultation`;
 }
 
-/** Wake Render before the user submits (free tier cold starts can exceed 15s). */
-export async function warmUpConsultationApi() {
-  const controller = new AbortController();
-  const timeoutId = window.setTimeout(() => controller.abort(), 12000);
+export function getWarmupUrl() {
+  return `${API_BASE_URL}/api/consultation/warmup`;
+}
 
+export async function warmUpConsultationApi() {
   try {
-    await fetch(getConsultationUrl(), { method: "GET", signal: controller.signal });
+    await fetch(getWarmupUrl(), { method: "GET" });
   } catch {
-    // Warm-up is best-effort only.
-  } finally {
-    window.clearTimeout(timeoutId);
+    // Warmup is best-effort; ignore failures so the app can still load.
   }
 }
 
-export function getConsultationErrorMessage(err, url) {
-  const message =
-    err?.name === "AbortError"
-      ? "The server took too long to respond. Please try again in a moment."
-      : err instanceof TypeError
-        ? "Could not reach the server. Please check your connection and try again."
-        : err?.message || "Something went wrong. Please try again.";
-
-  return url ? `${message} (endpoint: ${url})` : message;
-}
-
+/**
+ * Submits the consultation form to the backend.
+ * Returns { status, duration, data } where data is the parsed JSON body:
+ *   { success: true, appNo, userEmailSent }  on success
+ *   { success: false, error }                on failure
+ */
 export async function submitConsultation(form) {
   const url = getConsultationUrl();
-  let lastError = null;
+  const start = performance.now();
 
-  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt += 1) {
-    const controller = new AbortController();
-    const timeoutId = window.setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+  const response = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(form),
+  });
 
-    try {
-      const start = Date.now();
-      const res = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
-        signal: controller.signal,
-      });
+  const duration = performance.now() - start;
 
-      const duration = Date.now() - start;
-      const raw = await res.text();
-      let data = null;
-
-      try {
-        data = JSON.parse(raw);
-      } catch {
-        data = raw;
-      }
-
-      if (!res.ok) {
-        const errText = typeof data === "string" ? data : JSON.stringify(data);
-        throw new Error(data?.error || `Unexpected response (${res.status}): ${errText}`);
-      }
-
-      if (typeof data === "object" && data !== null && data.success === false) {
-        throw new Error(data.error || "Server returned an unsuccessful response.");
-      }
-
-      return {
-        status: res.status,
-        duration,
-        data: typeof data === "object" && data !== null ? data : {},
-      };
-    } catch (err) {
-      lastError = err;
-      const shouldRetry =
-        attempt < MAX_ATTEMPTS && (err.name === "AbortError" || err instanceof TypeError);
-
-      if (!shouldRetry) {
-        break;
-      }
-
-      await new Promise((resolve) => window.setTimeout(resolve, 1500));
-    } finally {
-      window.clearTimeout(timeoutId);
-    }
+  let data;
+  try {
+    data = await response.json();
+  } catch {
+    data = { success: false, error: "Received an unreadable response from the server." };
   }
 
-  throw lastError;
+  return { status: response.status, duration, data };
+}
+
+/**
+ * Turns a thrown error (network failure, timeout, etc.) into a friendly
+ * message for display in the form's error banner.
+ */
+export function getConsultationErrorMessage(err, url) {
+  if (err?.name === "TypeError" || /fetch/i.test(err?.message || "")) {
+    return "We couldn't reach the server. Please check your connection and try again.";
+  }
+  if (err?.message) {
+    return err.message;
+  }
+  return "Something went wrong while submitting your application. Please try again.";
 }

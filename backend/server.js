@@ -1,25 +1,66 @@
-const http = require("http");
-const app = require("./app");
-const config = require("./config/env");
+require("dotenv").config();
+const express = require("express");
+const cors = require("cors");
+const helmet = require("helmet");
+const rateLimit = require("express-rate-limit");
+const consultationRouter = require("./routes/consultation.route");
 
-const server = http.createServer(app);
+const app = express();
 
-const host = "0.0.0.0";
-const preferredPort = Number(process.env.PORT || config.port || 3000);
+const defaultOrigins = [
+  "http://localhost:5173",
+  "http://127.0.0.1:5173",
+  "http://localhost:3000",
+  "http://127.0.0.1:3000",
+];
 
-function startServer(port) {
-  server.once("error", (err) => {
-    if (err.code === "EADDRINUSE" && port !== 0) {
-      console.warn(`Port ${port} is busy. Trying a free port...`);
-      startServer(0);
-      return;
-    }
+const configuredOrigins = (process.env.CORS_ORIGIN || "")
+  .split(",")
+  .map((origin) => origin.trim())
+  .filter(Boolean);
 
-    console.error("Server failed to start:", err);
-    process.exit(1);
-  });
+const allowedOrigins = Array.from(new Set([...defaultOrigins, ...configuredOrigins]));
 
-  server.listen(port, host, () => {});
+function isAllowedOrigin(origin) {
+  if (!origin) return true;
+  return allowedOrigins.includes(origin) || /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin);
 }
 
-startServer(preferredPort);
+app.use(helmet());
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (isAllowedOrigin(origin)) {
+        return callback(null, true);
+      }
+      return callback(null, false);
+    },
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
+app.use(express.json({ limit: "100kb" }));
+
+// Protects the mail-sending endpoint from spam/abuse.
+const consultationLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, error: "Too many requests. Please try again later." },
+});
+
+app.use("/api/consultation", consultationLimiter, consultationRouter);
+
+app.get("/health", (req, res) => res.json({ status: "ok" }));
+
+app.use((err, req, res, next) => {
+  console.error("Unhandled error:", err);
+  res.status(500).json({ success: false, error: "Internal server error." });
+});
+
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+  console.log(`Consultation backend running on port ${PORT}`);
+});

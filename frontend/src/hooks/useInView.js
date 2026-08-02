@@ -1,21 +1,24 @@
 import { useEffect, useRef, useState } from "react";
 
-export default function useInView(options) {
+export default function useInView(options = {}) {
   const ref = useRef(null);
   const [inView, setInView] = useState(false);
 
   useEffect(() => {
     const node = ref.current;
     if (!node) return;
-    const io = new IntersectionObserver(([entry]) => {
+
+    const observer = new IntersectionObserver(([entry]) => {
       if (entry.isIntersecting) {
         setInView(true);
-        io.unobserve(node);
+        observer.unobserve(node);
       }
-    }, options || { threshold: 0.2 });
-    io.observe(node);
-    return () => io.disconnect();
-  }, [options]);
+    }, options);
+
+    observer.observe(node);
+
+    return () => observer.disconnect();
+  }, [options?.root, options?.rootMargin, options?.threshold]);
 
   return [ref, inView];
 }

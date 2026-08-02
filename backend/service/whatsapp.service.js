@@ -1,92 +1,83 @@
-const twilio = require("twilio");
-const config = require("../config/env");
-const { sendUserEmail } = require("./consultation.service");
+const axios = require("axios");
 
-function getClient() {
-  if (!config.twilio.accountSid || !config.twilio.authToken) {
-    throw new Error("Twilio credentials are incomplete.");
-  }
-
-  return twilio(config.twilio.accountSid, config.twilio.authToken);
-}
-
-function toWhatsAppAddress(rawNumber) {
-  if (!rawNumber) return null;
-  return rawNumber.startsWith("whatsapp:") ? rawNumber : `whatsapp:${rawNumber}`;
-}
+const GRAPH_VERSION = "v20.0";
+const GRAPH_URL = `https://graph.facebook.com/${GRAPH_VERSION}`;
 
 /**
- * Notify the admin/firm via WhatsApp about a new consultation request.
+ * WhatsApp Business "conversations that a business starts" (i.e. notifying
+ * someone who hasn't messaged you first) MUST use a pre-approved message
+ * template - free-form text only works within a 24h window after the
+ * customer messages you. So both functions below send template messages.
+ *
+ * Create the templates once in Meta Business Manager -> WhatsApp Manager ->
+ * Message Templates (see README for the exact body text to submit).
  */
-async function sendAdminWhatsapp({ appNo, name, email, phone, service, message }) {
-  const to = toWhatsAppAddress(config.admin.whatsapp);
-  if (!to) return null;
+async function sendWhatsAppTemplate(to, templateName, languageCode, bodyParams = []) {
+  const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID;
+  const token = process.env.WHATSAPP_ACCESS_TOKEN;
 
-  const client = getClient();
-  const body =
-    `📥 *New Consultation Request*\n` +
-    `App No: ${appNo}\n` +
-    `Name: ${name}\n` +
-    `Email: ${email}\n` +
-    `Phone: ${phone || "-"}\n` +
-    `Service: ${service || "-"}\n` +
-    `Message: ${message || "-"}`;
+  if (!phoneNumberId || !token) {
+    // WhatsApp isn't configured - treat as a no-op rather than an error,
+    // since it's an optional channel on top of email.
+    return null;
+  }
 
-  return client.messages.create({
-    from: config.twilio.whatsappFrom,
-    to,
-    body,
+  const url = `${GRAPH_URL}/${phoneNumberId}/messages`;
+
+  const payload = {
+    messaging_product: "whatsapp",
+    to, // E.164 format without "+", e.g. 919876543210
+    type: "template",
+    template: {
+      name: templateName,
+      language: { code: languageCode || "en_US" },
+      components: bodyParams.length
+        ? [
+            {
+              type: "body",
+              parameters: bodyParams.map((text) => ({ type: "text", text: String(text) })),
+            },
+          ]
+        : [],
+    },
+  };
+
+  const response = await axios.post(url, payload, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
   });
+
+  return response.data;
 }
 
-/**
- * Confirmation WhatsApp message sent back to the applicant (only if they gave a phone number).
- */
-async function sendUserWhatsapp({ appNo, name, phone }) {
-  const to = toWhatsAppAddress(phone);
-  if (!to) return null; // no phone provided, skip silently
-
-  const client = getClient();
-  const body =
-    `Hi ${name}, thanks for your application! 🎉\n` +
-    `Your application number is *${appNo}*.\n` +
-    `Our team will contact you within 24 hours.`;
-
-  return client.messages.create({
-    from: config.twilio.whatsappFrom,
-    to,
-    body,
-  });
+function normalizeNumber(raw) {
+  if (!raw) return null;
+  // Strip spaces, dashes, parens and a leading "+" - Meta's API wants
+  // digits only (country code + number), e.g. "919876543210".
+  return String(raw).replace(/[^\d]/g, "");
 }
 
-async function sendUserNotification({ appNo, name, email, phone }) {
-  const failures = [];
-  let sentAny = false;
+async function sendAdminWhatsAppAlert({ name, phone, service, appNo }) {
+  const adminNumber = normalizeNumber(process.env.ADMIN_WHATSAPP_NUMBER);
+  if (!adminNumber) return null;
 
-  if (email) {
-    try {
-      await sendUserEmail({ appNo, name, email });
-      sentAny = true;
-    } catch (err) {
-      failures.push({ type: "email", detail: err.message || String(err) });
-    }
-  }
-
-  if (phone) {
-    try {
-      await sendUserWhatsapp({ appNo, name, phone });
-      sentAny = true;
-    } catch (err) {
-      failures.push({ type: "whatsapp", detail: err.message || String(err) });
-    }
-  }
-
-  if (failures.length) {
-    throw new Error(JSON.stringify(failures));
-  }
-
-  return sentAny;
+  const templateName = process.env.WHATSAPP_ADMIN_TEMPLATE || "consultation_admin_alert";
+  return sendWhatsAppTemplate(adminNumber, templateName, "en_US", [
+    appNo,
+    name,
+    phone || "-",
+    service || "-",
+  ]);
 }
 
-module.exports = { sendAdminWhatsapp, sendUserWhatsapp, sendUserNotification };
+async function sendUserWhatsAppConfirmation({ name, phone, appNo }) {
+  const userNumber = normalizeNumber(phone);
+  if (!userNumber) return null; // user didn't provide a phone number
 
+  const templateName = process.env.WHATSAPP_USER_TEMPLATE || "consultation_user_confirmation";
+  return sendWhatsAppTemplate(userNumber, templateName, "en_US", [name, appNo]);
+}
+
+module.exports = { sendAdminWhatsAppAlert, sendUserWhatsAppConfirmation };

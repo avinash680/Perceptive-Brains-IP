@@ -409,14 +409,11 @@ const getServiceCategory = (id) => SERVICE_ID_PREFIX_TO_CATEGORY[id.charAt(0)];
 // since there's nothing to scale.
 const PATENT_GOVT_FEE_MULTIPLIER = 5;
 const PATENT_PROFESSIONAL_FEE_MULTIPLIER = 2;
-// Per-service overrides for the Govt Fee multiplier (falls back to
-// PATENT_GOVT_FEE_MULTIPLIER above when a service id isn't listed here).
-// p5 = Expedited Examination, which gets a higher x7.5 rate.
+// Per-service overrides for the Govt Fee / Professional Fee multipliers
+// (fall back to the general constants above when a service id isn't listed).
+// p5 = Expedited Examination, which gets a higher Govt x7.5 and Professional x2.5 rate.
 const PATENT_GOVT_FEE_MULTIPLIER_OVERRIDES = { p5: 7.5 };
-// Services in this list only get the Govt Fee corporate multiplier applied —
-// their Professional Fee stays at its normal base amount, unmultiplied.
-// p5 = Expedited Examination.
-const PATENT_GOVT_ONLY_SERVICE_IDS = ["p5"];
+const PATENT_PROFESSIONAL_FEE_MULTIPLIER_OVERRIDES = { p5: 2.5 };
 const DESIGN_GOVT_FEE_MULTIPLIER = 4;
 const DESIGN_PROFESSIONAL_FEE_MULTIPLIER = 2;
 const TRADEMARK_PROFESSIONAL_FEE_MULTIPLIER = 2;
@@ -428,18 +425,19 @@ const applyEntityMultiplier = (svc, isCorporate) => {
   const govtIsNumeric = typeof svc.govtFee === "number";
 
   if (isCorporate && svcCategory === "patents") {
-    const govtOnly = PATENT_GOVT_ONLY_SERVICE_IDS.includes(svc.id);
     const govtMultiplier = PATENT_GOVT_FEE_MULTIPLIER_OVERRIDES[svc.id] ?? PATENT_GOVT_FEE_MULTIPLIER;
+    const professionalMultiplier =
+      PATENT_PROFESSIONAL_FEE_MULTIPLIER_OVERRIDES[svc.id] ?? PATENT_PROFESSIONAL_FEE_MULTIPLIER;
     return {
       ...svc,
-      professionalFee: govtOnly ? svc.professionalFee : svc.professionalFee * PATENT_PROFESSIONAL_FEE_MULTIPLIER,
+      professionalFee: svc.professionalFee * professionalMultiplier,
       baseProfessionalFee: svc.professionalFee,
       govtFee: govtIsNumeric ? svc.govtFee * govtMultiplier : svc.govtFee,
       baseGovtFee: svc.govtFee,
       isGovtFeeMultiplied: govtIsNumeric,
-      isProfessionalFeeMultiplied: !govtOnly,
+      isProfessionalFeeMultiplied: true,
       govtFeeMultiplier: govtMultiplier,
-      professionalFeeMultiplier: govtOnly ? undefined : PATENT_PROFESSIONAL_FEE_MULTIPLIER,
+      professionalFeeMultiplier: professionalMultiplier,
     };
   }
 
