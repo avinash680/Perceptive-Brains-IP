@@ -51,17 +51,24 @@ app.use(
 );
 app.use(express.json({ limit: "100kb" }));
 
-// Protects the mail-sending endpoint from spam/abuse.
+// Protects the mail-sending endpoint from spam/abuse while allowing the warmup probe.
 const consultationLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 10,
+  max: 50,
   standardHeaders: true,
   legacyHeaders: false,
   message: { success: false, error: "Too many requests. Please try again later." },
 });
 
-app.use("/api/consultation", consultationLimiter, consultationRouter);
-app.use("/consultation", consultationLimiter, consultationRouter);
+const consultationWarmupMiddleware = (req, res, next) => {
+  if (req.method === "GET" && req.path === "/warmup") {
+    return next();
+  }
+  return consultationLimiter(req, res, next);
+};
+
+app.use("/api/consultation", consultationWarmupMiddleware, consultationRouter);
+app.use("/consultation", consultationWarmupMiddleware, consultationRouter);
 
 app.get("/health", (req, res) => res.json({ status: "ok" }));
 
