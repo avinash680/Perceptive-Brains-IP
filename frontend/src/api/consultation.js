@@ -1,7 +1,7 @@
 // Base URL of your Express backend. Set VITE_API_URL in your .env for
 // production (e.g. https://api.yourfirm.com). Falls back to localhost for dev.
 const API_BASE_URL =
-  (typeof import.meta !== "undefined" && import.meta.env && import.meta.env.VITE_API_URL) ||
+  (typeof import.meta !== "undefined" && import.meta.env && import.meta.env.VITE_API_URL?.trim()) ||
   "http://localhost:5000";
 
 export function getConsultationUrl() {

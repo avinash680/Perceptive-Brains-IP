@@ -14,12 +14,21 @@ const defaultOrigins = [
   "http://127.0.0.1:3000",
 ];
 
-const configuredOrigins = (process.env.CORS_ORIGIN || "")
-  .split(",")
-  .map((origin) => origin.trim())
-  .filter(Boolean);
+const configuredOrigins = [process.env.CORS_ORIGIN, process.env.FRONTEND_ORIGIN]
+  .filter(Boolean)
+  .flatMap((value) =>
+    value
+      .split(/[\n,]/)
+      .map((origin) => origin.trim())
+      .filter(Boolean)
+  );
 
-const allowedOrigins = Array.from(new Set([...defaultOrigins, ...configuredOrigins]));
+const renderFrontendOrigins = [
+  "https://perceptive-brains-ip-1.onrender.com",
+  "https://perceptive-brains-ip.onrender.com",
+];
+
+const allowedOrigins = Array.from(new Set([...defaultOrigins, ...configuredOrigins, ...renderFrontendOrigins]));
 
 function isAllowedOrigin(origin) {
   if (!origin) return true;
@@ -62,6 +71,6 @@ app.use((err, req, res, next) => {
 });
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
+app.listen(PORT, "0.0.0.0", () => {
   console.log(`Consultation backend running on port ${PORT}`);
 });
