@@ -103,6 +103,10 @@ test("consultation submission remains successful when email delivery is unavaila
     assert.equal(res.statusCode, 200);
     assert.equal(res.body.success, true);
     assert.equal(res.body.userEmailSent, false);
+    assert.equal(res.body.adminEmailSent, false);
+    assert.equal(res.body.notificationsPending, true);
+    assert.ok(typeof res.body.adminEmailError === "string");
+    assert.ok(typeof res.body.userEmailError === "string");
   } finally {
     if (originalUser === undefined) delete process.env.GMAIL_USER; else process.env.GMAIL_USER = originalUser;
     if (originalPassword === undefined) delete process.env.GMAIL_APP_PASSWORD; else process.env.GMAIL_APP_PASSWORD = originalPassword;
