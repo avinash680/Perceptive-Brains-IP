@@ -34,16 +34,14 @@ async function submitConsultation(req, res) {
       submittedAt,
     };
 
+    let adminEmailSent = false;
     let userEmailSent = false;
 
     try {
       await sendAdminNotification(payload);
+      adminEmailSent = true;
     } catch (err) {
       console.error("Admin email failed:", err.message || err);
-      return res.status(502).json({
-        success: false,
-        error: "We could not process your application right now. Please try again shortly.",
-      });
     }
 
     try {
@@ -69,6 +67,7 @@ async function submitConsultation(req, res) {
     return res.status(200).json({
       success: true,
       appNo,
+      adminEmailSent,
       userEmailSent,
       adminWhatsAppSent: adminWaResult.status === "fulfilled" && adminWaResult.value !== null,
       userWhatsAppSent: userWaResult.status === "fulfilled" && userWaResult.value !== null,

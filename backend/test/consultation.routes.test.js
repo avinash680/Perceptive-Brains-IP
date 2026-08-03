@@ -61,3 +61,52 @@ test("consultation warmup endpoint is served under /api/consultation", async () 
     await once(server, "exit").catch(() => {});
   }
 });
+
+test("consultation submission remains successful when email delivery is unavailable", async () => {
+  const controller = require("../controllers/consultation.controller");
+  const originalUser = process.env.GMAIL_USER;
+  const originalPassword = process.env.GMAIL_APP_PASSWORD;
+  const originalSmtpUser = process.env.SMTP_USER;
+  const originalSmtpPass = process.env.SMTP_PASS;
+
+  process.env.GMAIL_USER = "";
+  process.env.GMAIL_APP_PASSWORD = "";
+  process.env.SMTP_USER = "";
+  process.env.SMTP_PASS = "";
+
+  try {
+    const req = {
+      body: {
+        name: "Test User",
+        email: "user@example.com",
+        phone: "1234567890",
+        service: "Trademark",
+        message: "Please review this request.",
+      },
+    };
+
+    const res = {
+      statusCode: 200,
+      body: null,
+      status(code) {
+        this.statusCode = code;
+        return this;
+      },
+      json(payload) {
+        this.body = payload;
+        return this;
+      },
+    };
+
+    await controller.submitConsultation(req, res);
+
+    assert.equal(res.statusCode, 200);
+    assert.equal(res.body.success, true);
+    assert.equal(res.body.userEmailSent, false);
+  } finally {
+    if (originalUser === undefined) delete process.env.GMAIL_USER; else process.env.GMAIL_USER = originalUser;
+    if (originalPassword === undefined) delete process.env.GMAIL_APP_PASSWORD; else process.env.GMAIL_APP_PASSWORD = originalPassword;
+    if (originalSmtpUser === undefined) delete process.env.SMTP_USER; else process.env.SMTP_USER = originalSmtpUser;
+    if (originalSmtpPass === undefined) delete process.env.SMTP_PASS; else process.env.SMTP_PASS = originalSmtpPass;
+  }
+});
