@@ -69,6 +69,9 @@ test("buildTransportConfig falls back to Gmail when no SMTP host is provided", (
     () => buildTransportConfig()
   );
 
-  assert.equal(config.service, "gmail");
+  assert.equal(config.host, "smtp.gmail.com");
+  assert.equal(config.port, 587);
+  assert.equal(config.secure, false);
+  assert.equal(config.family, 4);
   assert.deepEqual(config.auth, { user: "sender@gmail.com", pass: "app-password" });
 });

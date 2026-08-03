@@ -7,6 +7,7 @@ const consultationRouter = require("./routes/consultation.route");
 const { verifyMailConnection } = require("./service/email.service");
 
 const app = express();
+app.set("trust proxy", 1);
 
 app.use(helmet());
 app.use(

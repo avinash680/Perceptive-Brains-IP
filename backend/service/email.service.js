@@ -19,24 +19,18 @@ function getMailAuth() {
 
 function buildTransportConfig() {
   const auth = getMailAuth();
-  const host = process.env.SMTP_HOST || process.env.GMAIL_HOST;
+  const host = process.env.SMTP_HOST || process.env.GMAIL_HOST || "smtp.gmail.com";
   const port = Number(process.env.SMTP_PORT || process.env.GMAIL_PORT || 587);
   const secure = String(process.env.SMTP_SECURE || "").toLowerCase() === "true" || port === 465;
-
-  if (host) {
-    return {
-      host,
-      port,
-      secure,
-      auth,
-      pool: false,
-    };
-  }
+  const family = Number(process.env.SMTP_FAMILY || 4);
 
   return {
-    service: "gmail",
+    host,
+    port,
+    secure,
     auth,
     pool: false,
+    family,
   };
 }
 
