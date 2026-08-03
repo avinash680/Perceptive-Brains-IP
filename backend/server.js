@@ -29,6 +29,15 @@ app.use("/consultation", consultationLimiter, consultationRouter);
 
 app.get("/health", (req, res) => res.json({ status: "ok" }));
 
+app.get("/", (req, res) => {
+  res.json({
+    service: "Perceptive Brains IP API",
+    health: "/health",
+    consultation: "/api/consultation",
+    warmup: "/api/consultation/warmup",
+  });
+});
+
 app.use((err, req, res, next) => {
   console.error("Unhandled error:", err);
   res.status(500).json({ success: false, error: "Internal server error." });

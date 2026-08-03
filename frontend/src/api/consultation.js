@@ -1,20 +1,11 @@
-// Base URL of your Express backend. Set VITE_API_URL in your .env for
-// production (e.g. https://api.yourfirm.com). On a live site, fall back to the Render backend.
-const DEFAULT_API_BASE_URL =
-  typeof window !== "undefined" && /localhost|127\.0\.0\.1/.test(window.location.hostname)
-    ? "http://localhost:5000"
-    : "https://perceptive-brains-ip.onrender.com";
-
-const API_BASE_URL =
-  (typeof import.meta !== "undefined" && import.meta.env && import.meta.env.VITE_API_URL?.trim()) ||
-  DEFAULT_API_BASE_URL;
+import { getApiBase } from "../config/api";
 
 export function getConsultationUrl() {
-  return `${API_BASE_URL}/api/consultation`;
+  return `${getApiBase()}/api/consultation`;
 }
 
 export function getWarmupUrl() {
-  return `${API_BASE_URL}/api/consultation/warmup`;
+  return `${getApiBase()}/api/consultation/warmup`;
 }
 
 export async function warmUpConsultationApi() {
@@ -60,18 +51,15 @@ export async function submitConsultation(form) {
   return { status: response.status, duration, data };
 }
 
-/**
- * Turns a thrown error (network failure, timeout, etc.) into a friendly
- * message for display in the form's error banner.
- */
 export function getConsultationErrorMessage(err, url) {
-  // If the API URL contains localhost/127.0.0.1 but the website is accessed via a live public domain,
-  // it means the developer forgot to configure VITE_API_URL on their hosting provider.
   const isLocalApi = /localhost|127\.0\.0\.1/.test(url || "");
-  const isLiveSite = typeof window !== "undefined" && window.location && !/localhost|127\.0\.0\.1/.test(window.location.hostname);
+  const isLiveSite =
+    typeof window !== "undefined" &&
+    window.location &&
+    !/localhost|127\.0\.0\.1/.test(window.location.hostname);
 
   if (isLocalApi && isLiveSite) {
-    return "Configuration Error: The website is live but trying to connect to a local backend (localhost). Please set the VITE_API_URL environment variable on your hosting platform (like Vercel, Netlify or Render) to point to your live Render backend URL.";
+    return "Configuration Error: The live website is trying to reach localhost. Set VITE_API_URL to https://perceptive-brains-ip.onrender.com on your frontend hosting (Render/Vercel).";
   }
 
   if (err?.name === "TypeError" || /fetch/i.test(err?.message || "")) {
