@@ -5,14 +5,39 @@ function normalizePass(value) {
 }
 
 function getMailAuth() {
-  const user = process.env.GMAIL_USER || process.env.SMTP_USER;
-  const pass = normalizePass(process.env.GMAIL_APP_PASSWORD || process.env.SMTP_PASS);
+  const user = process.env.GMAIL_USER || process.env.SMTP_USER || process.env.EMAIL_USER;
+  const pass = normalizePass(process.env.GMAIL_APP_PASSWORD || process.env.SMTP_PASS || process.env.EMAIL_PASS);
 
   if (!user || !pass) {
-    throw new Error("Gmail SMTP is not configured. Set GMAIL_USER and GMAIL_APP_PASSWORD in .env");
+    throw new Error(
+      "SMTP is not configured. Set GMAIL_USER and GMAIL_APP_PASSWORD, or provide SMTP_HOST/SMTP_PORT/SMTP_USER/SMTP_PASS in your environment."
+    );
   }
 
   return { user, pass };
+}
+
+function buildTransportConfig() {
+  const auth = getMailAuth();
+  const host = process.env.SMTP_HOST || process.env.GMAIL_HOST;
+  const port = Number(process.env.SMTP_PORT || process.env.GMAIL_PORT || 587);
+  const secure = String(process.env.SMTP_SECURE || "").toLowerCase() === "true" || port === 465;
+
+  if (host) {
+    return {
+      host,
+      port,
+      secure,
+      auth,
+      pool: false,
+    };
+  }
+
+  return {
+    service: "gmail",
+    auth,
+    pool: false,
+  };
 }
 
 let transporter = null;
@@ -22,15 +47,16 @@ function getTransporter() {
     return transporter;
   }
 
-  const auth = getMailAuth();
-
-  transporter = nodemailer.createTransport({
-    service: "gmail",
-    auth,
-    pool: false,
-  });
+  transporter = nodemailer.createTransport(buildTransportConfig());
 
   return transporter;
+}
+
+function getFromAddress() {
+  const auth = getMailAuth();
+  const fromName = process.env.MAIL_FROM_NAME || "Perceptive Brains IP";
+  const fromAddress = process.env.MAIL_FROM_ADDRESS || auth.user;
+  return `"${fromName}" <${fromAddress}>`;
 }
 
 async function verifyMailConnection() {
@@ -45,31 +71,27 @@ async function verifyMailConnection() {
   }
 }
 
-function withTimeout(promiseFactory, timeoutMs, fallbackValue) {
-  return new Promise((resolve) => {
-    let settled = false;
+function withTimeout(promiseFactory, timeoutMs) {
+  return new Promise((resolve, reject) => {
+    let timedOut = false;
 
     const timer = setTimeout(() => {
-      if (!settled) {
-        settled = true;
-        resolve(fallbackValue);
-      }
+      timedOut = true;
+      reject(new Error(`Email delivery timed out after ${timeoutMs}ms.`));
     }, timeoutMs);
 
     Promise.resolve()
       .then(promiseFactory)
       .then((value) => {
-        if (!settled) {
-          settled = true;
+        if (!timedOut) {
           clearTimeout(timer);
           resolve(value);
         }
       })
-      .catch(() => {
-        if (!settled) {
-          settled = true;
+      .catch((error) => {
+        if (!timedOut) {
           clearTimeout(timer);
-          resolve(fallbackValue);
+          reject(error);
         }
       });
   });
@@ -78,12 +100,7 @@ function withTimeout(promiseFactory, timeoutMs, fallbackValue) {
 const EMAIL_SEND_TIMEOUT_MS = Number(process.env.EMAIL_SEND_TIMEOUT_MS || 8000);
 
 async function sendMailWithTimeout(message, timeoutMs = EMAIL_SEND_TIMEOUT_MS) {
-  const info = await withTimeout(() => getTransporter().sendMail(message), timeoutMs, null);
-
-  if (!info) {
-    throw new Error(`Email delivery timed out after ${timeoutMs}ms.`);
-  }
-
+  const info = await withTimeout(() => getTransporter().sendMail(message), timeoutMs);
   return info;
 }
 
@@ -134,6 +151,7 @@ function logMailResult(label, info) {
 async function sendAdminNotification({ name, email, phone, service, message, appNo, submittedAt }) {
   const { user } = getMailAuth();
   const adminEmail = process.env.ADMIN_EMAIL || user;
+  const fromAddress = getFromAddress();
 
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 560px; margin: 0 auto; color:#1c1917;">
@@ -150,7 +168,7 @@ async function sendAdminNotification({ name, email, phone, service, message, app
   `;
 
   const info = await sendMailWithTimeout({
-    from: `"Perceptive Brains IP" <${user}>`,
+    from: fromAddress,
     to: adminEmail,
     replyTo: email,
     subject: `New Application ${appNo} - ${name}`,
@@ -165,7 +183,8 @@ async function sendUserConfirmation({ name, email, service, appNo, submittedAt }
   const { user } = getMailAuth();
   const recipient = String(email || "").trim();
   const adminEmail = process.env.ADMIN_EMAIL || user;
-  const ccRecipient = adminEmail && adminEmail !== recipient ? adminEmail : null;
+  const ccRecipient = adminEmail && adminEmail !== recipient ? adminEmail : undefined;
+  const fromAddress = getFromAddress();
 
   const text = [
     `Dear ${name},`,
@@ -195,7 +214,7 @@ async function sendUserConfirmation({ name, email, service, appNo, submittedAt }
   `;
 
   const baseMessage = {
-    from: `"Perceptive Brains IP" <${user}>`,
+    from: fromAddress,
     replyTo: user,
     subject: `Application Received - ${appNo}`,
     text,
@@ -205,11 +224,15 @@ async function sendUserConfirmation({ name, email, service, appNo, submittedAt }
   let info;
 
   try {
-    info = await sendMailWithRetry({
+    const message = {
       ...baseMessage,
       to: recipient,
-      cc: ccRecipient,
-    });
+    };
+    if (ccRecipient) {
+      message.cc = ccRecipient;
+    }
+
+    info = await sendMailWithRetry(message);
   } catch (error) {
     if (ccRecipient) {
       console.warn("User confirmation failed for primary recipient, retrying with admin fallback:", error.message || error);
@@ -232,4 +255,7 @@ module.exports = {
   verifyMailConnection,
   withTimeout,
   getTransporter,
+  buildTransportConfig,
+  getMailAuth,
+  getFromAddress,
 };
