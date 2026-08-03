@@ -1,37 +1,41 @@
-require("../config/env");
+require("dotenv").config();
 
 const {
-  verifySmtpConnection,
-  sendConsultationNotifications,
-  getSmtpStatus,
-} = require("../service/consultation.service");
+  verifyMailConnection,
+  sendAdminNotification,
+  sendUserConfirmation,
+} = require("../service/email.service");
 
 async function main() {
-  console.log("SMTP status:", getSmtpStatus());
-
-  const verification = await verifySmtpConnection();
+  const verification = await verifyMailConnection();
   if (!verification.ok) {
     process.exitCode = 1;
     return;
   }
 
-  const testEmail = process.argv[2] || process.env.ADMIN_EMAIL;
+  const testEmail = process.argv[2] || process.env.ADMIN_EMAIL || process.env.GMAIL_USER;
   if (!testEmail) {
     console.error("Pass a test email: node scripts/test-smtp.js you@gmail.com");
     process.exitCode = 1;
     return;
   }
 
-  await sendConsultationNotifications({
+  const submittedAt = new Date();
+  const payload = {
     appNo: "IP-TEST-0001",
     name: "SMTP Test User",
     email: testEmail,
     phone: "+91 00000 00000",
     service: "Test",
     message: "This is a test email from the consultation form backend.",
-  });
+    submittedAt,
+  };
 
-  console.log("Test emails sent successfully to admin and", testEmail);
+  await sendAdminNotification(payload);
+  console.log("Admin notification sent.");
+
+  await sendUserConfirmation(payload);
+  console.log("User confirmation sent to:", testEmail);
 }
 
 main().catch((err) => {

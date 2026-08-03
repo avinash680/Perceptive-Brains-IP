@@ -1,23 +1,79 @@
 const nodemailer = require("nodemailer");
 
-// Build SMTP transport configuration based on env variables.
-// Fallback to Gmail configuration if SMTP_HOST is not provided.
-const smtpConfig = {
-  host: process.env.SMTP_HOST || "smtp.gmail.com",
-  port: parseInt(process.env.SMTP_PORT || "587", 10),
-  secure: process.env.SMTP_SECURE === "true", // true for port 465, false for 587/25
-  auth: {
-    user: process.env.SMTP_USER || process.env.GMAIL_USER,
-    pass: process.env.SMTP_PASS || process.env.GMAIL_APP_PASSWORD,
-  },
-};
-
-// If using Google service helper specifically (when SMTP_HOST is omitted)
-if (!process.env.SMTP_HOST && (process.env.GMAIL_USER || (smtpConfig.auth.user && smtpConfig.auth.user.includes("gmail.com")))) {
-  smtpConfig.service = "gmail";
+function normalizePass(value) {
+  return String(value || "").trim().replace(/\s+/g, "");
 }
 
-const transporter = nodemailer.createTransport(smtpConfig);
+function getMailAuth() {
+  const user = process.env.GMAIL_USER || process.env.SMTP_USER;
+  const pass = normalizePass(process.env.GMAIL_APP_PASSWORD || process.env.SMTP_PASS);
+
+  if (!user || !pass) {
+    throw new Error("Gmail SMTP is not configured. Set GMAIL_USER and GMAIL_APP_PASSWORD in .env");
+  }
+
+  return { user, pass };
+}
+
+let transporter = null;
+
+function getTransporter() {
+  if (transporter) {
+    return transporter;
+  }
+
+  const auth = getMailAuth();
+
+  transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth,
+    pool: false,
+  });
+
+  return transporter;
+}
+
+async function verifyMailConnection() {
+  try {
+    await getTransporter().verify();
+    const { user } = getMailAuth();
+    console.info("[email] Gmail SMTP verified for:", user);
+    return { ok: true };
+  } catch (err) {
+    console.error("[email] Gmail SMTP verification failed:", err.message || err);
+    return { ok: false, error: err.message || String(err) };
+  }
+}
+
+function withTimeout(promiseFactory, timeoutMs, fallbackValue) {
+  return new Promise((resolve) => {
+    let settled = false;
+
+    const timer = setTimeout(() => {
+      if (!settled) {
+        settled = true;
+        resolve(fallbackValue);
+      }
+    }, timeoutMs);
+
+    Promise.resolve()
+      .then(promiseFactory)
+      .then((value) => {
+        if (!settled) {
+          settled = true;
+          clearTimeout(timer);
+          resolve(value);
+        }
+      })
+      .catch(() => {
+        if (!settled) {
+          settled = true;
+          clearTimeout(timer);
+          resolve(fallbackValue);
+        }
+      });
+  });
+}
 
 const escapeHtml = (str = "") =>
   String(str)
@@ -29,26 +85,26 @@ const escapeHtml = (str = "") =>
 const formatDate = (date) =>
   date.toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" });
 
-function withTimeout(operation, timeoutMs, fallbackValue) {
-  return new Promise((resolve) => {
-    const timer = setTimeout(() => resolve(fallbackValue), timeoutMs);
-
-    Promise.resolve()
-      .then(operation)
-      .then((value) => {
-        clearTimeout(timer);
-        resolve(value);
-      })
-      .catch(() => {
-        clearTimeout(timer);
-        resolve(fallbackValue);
-      });
+function logMailResult(label, info) {
+  console.info(`[email] ${label} result:`, {
+    messageId: info.messageId,
+    accepted: info.accepted,
+    rejected: info.rejected,
+    response: info.response,
   });
+
+  if (info.rejected?.length) {
+    throw new Error(`${label} rejected by Gmail: ${info.rejected.join(", ")}`);
+  }
+
+  if (!info.accepted?.length) {
+    throw new Error(`${label} was not accepted by Gmail.`);
+  }
 }
 
 async function sendAdminNotification({ name, email, phone, service, message, appNo, submittedAt }) {
-  const emailFrom = process.env.SMTP_FROM || process.env.SMTP_USER || process.env.GMAIL_USER;
-  const adminEmail = process.env.ADMIN_EMAIL || emailFrom;
+  const { user } = getMailAuth();
+  const adminEmail = process.env.ADMIN_EMAIL || user;
 
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 560px; margin: 0 auto; color:#1c1917;">
@@ -64,17 +120,35 @@ async function sendAdminNotification({ name, email, phone, service, message, app
     </div>
   `;
 
-  return transporter.sendMail({
-    from: `"IP Consultation Form" <${emailFrom}>`,
+  const info = await getTransporter().sendMail({
+    from: `"Perceptive Brains IP" <${user}>`,
     to: adminEmail,
     replyTo: email,
     subject: `New Application ${appNo} - ${name}`,
     html,
   });
+
+  logMailResult("admin notification", info);
+  return info;
 }
 
 async function sendUserConfirmation({ name, email, service, appNo, submittedAt }) {
-  const emailFrom = process.env.SMTP_FROM || process.env.SMTP_USER || process.env.GMAIL_USER;
+  const { user } = getMailAuth();
+  const recipient = String(email || "").trim();
+
+  const text = [
+    `Dear ${name},`,
+    "",
+    "Thank you for reaching out. Your consultation request has been received.",
+    "",
+    `Application No: ${appNo}`,
+    `Service: ${service || "-"}`,
+    `Submitted: ${formatDate(submittedAt)}`,
+    "",
+    "A registered attorney will review your details and reach out within 24 hours.",
+    "",
+    "Perceptive Brains IP",
+  ].join("\n");
 
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 560px; margin: 0 auto; color:#1c1917;">
@@ -89,12 +163,23 @@ async function sendUserConfirmation({ name, email, service, appNo, submittedAt }
     </div>
   `;
 
-  return transporter.sendMail({
-    from: `"Your IP Law Firm" <${emailFrom}>`,
-    to: email,
+  const info = await getTransporter().sendMail({
+    from: `"Perceptive Brains IP" <${user}>`,
+    to: recipient,
+    replyTo: user,
     subject: `Application Received - ${appNo}`,
+    text,
     html,
   });
+
+  logMailResult("user confirmation", info);
+  return info;
 }
 
-module.exports = { sendAdminNotification, sendUserConfirmation, transporter, withTimeout };
+module.exports = {
+  sendAdminNotification,
+  sendUserConfirmation,
+  verifyMailConnection,
+  withTimeout,
+  getTransporter,
+};

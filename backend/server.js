@@ -4,71 +4,28 @@ const cors = require("cors");
 const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
 const consultationRouter = require("./routes/consultation.route");
+const { verifyMailConnection } = require("./service/email.service");
 
 const app = express();
-
-const defaultOrigins = [
-  "http://localhost:5173",
-  "http://127.0.0.1:5173",
-  "http://localhost:3000",
-  "http://127.0.0.1:3000",
-];
-
-const configuredOrigins = [process.env.CORS_ORIGIN, process.env.FRONTEND_ORIGIN]
-  .filter(Boolean)
-  .flatMap((value) =>
-    value
-      .split(/[\n,]/)
-      .map((origin) => origin.trim())
-      .filter(Boolean)
-  );
-
-const renderFrontendOrigins = [
-  "https://perceptive-brains-ip-1.onrender.com",
-  "https://perceptive-brains-ip.onrender.com",
-];
-
-const allowedOrigins = Array.from(new Set([...defaultOrigins, ...configuredOrigins, ...renderFrontendOrigins]));
-
-function isAllowedOrigin(origin) {
-  if (!origin) return true;
-  return allowedOrigins.includes(origin) || /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin);
-}
 
 app.use(helmet());
 app.use(
   cors({
-    origin: function (origin, callback) {
-      if (isAllowedOrigin(origin)) {
-        return callback(null, true);
-      }
-      return callback(null, false);
-    },
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
+    origin: process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(",") : "*",
   })
 );
 app.use(express.json({ limit: "100kb" }));
 
-// Protects the mail-sending endpoint from spam/abuse while allowing the warmup probe.
 const consultationLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 50,
+  windowMs: 15 * 60 * 1000,
+  max: 10,
   standardHeaders: true,
   legacyHeaders: false,
   message: { success: false, error: "Too many requests. Please try again later." },
 });
 
-const consultationWarmupMiddleware = (req, res, next) => {
-  if (req.method === "GET" && req.path === "/warmup") {
-    return next();
-  }
-  return consultationLimiter(req, res, next);
-};
-
-app.use("/api/consultation", consultationWarmupMiddleware, consultationRouter);
-app.use("/consultation", consultationWarmupMiddleware, consultationRouter);
+app.use("/api/consultation", consultationLimiter, consultationRouter);
+app.use("/consultation", consultationLimiter, consultationRouter);
 
 app.get("/health", (req, res) => res.json({ status: "ok" }));
 
@@ -78,6 +35,9 @@ app.use((err, req, res, next) => {
 });
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, "0.0.0.0", () => {
+app.listen(PORT, () => {
   console.log(`Consultation backend running on port ${PORT}`);
+  verifyMailConnection();
 });
+
+module.exports = app;

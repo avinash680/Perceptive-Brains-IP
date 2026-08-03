@@ -1,87 +1,75 @@
-const { sendAdminNotification, sendUserConfirmation, withTimeout } = require("../service/email.service");
+const { sendAdminNotification, sendUserConfirmation } = require("../service/email.service");
 const { sendAdminWhatsAppAlert, sendUserWhatsAppConfirmation } = require("../service/whatsapp.service");
 const { generateAppNo } = require("../service/app.no.service");
 
 const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
-/**
- * CONTROLLER
- * ----------
- * This is where the actual "what should happen" logic lives for each route.
- * It does NOT know how emails/WhatsApp messages are actually sent - it just
- * calls the services that know how, and decides what to send back to the
- * client. Keeping this separate from routes.js means routes.js stays a
- * simple, readable list of "this URL -> this function".
- */
-
-// GET /api/consultation/warmup
-function warmup(req, res) {
+async function warmup(req, res) {
   res.status(200).json({ status: "warm" });
 }
 
-// POST /api/consultation
 async function submitConsultation(req, res) {
   try {
     const { name, email, phone, service, message } = req.body || {};
+    const trimmedName = String(name || "").trim();
+    const trimmedEmail = String(email || "").trim();
 
-    // 1. Validate input
-    if (!name || !name.trim()) {
+    if (!trimmedName) {
       return res.status(400).json({ success: false, error: "Full name is required." });
     }
-    if (!email || !isValidEmail(email)) {
+
+    if (!trimmedEmail || !isValidEmail(trimmedEmail)) {
       return res.status(400).json({ success: false, error: "A valid email address is required." });
     }
 
-    // 2. Generate the application number (no database needed)
     const appNo = generateAppNo();
     const submittedAt = new Date();
+    const payload = {
+      name: trimmedName,
+      email: trimmedEmail,
+      phone: String(phone || "").trim(),
+      service: String(service || "").trim(),
+      message: String(message || "").trim(),
+      appNo,
+      submittedAt,
+    };
 
-    // 3. Send email to admin + user at the same time with a short timeout
-    const [adminEmailResult, userEmailResult] = await Promise.allSettled([
-      withTimeout(
-        () => sendAdminNotification({ name, email, phone, service, message, appNo, submittedAt }),
-        5000,
-        null
-      ),
-      withTimeout(
-        () => sendUserConfirmation({ name, email, service, appNo, submittedAt }),
-        5000,
-        null
-      ),
-    ]);
+    let userEmailSent = false;
 
-    // Admin not being notified is the critical failure - stop here.
-    if (adminEmailResult.status === "rejected" || adminEmailResult.value === null) {
-      console.error("Admin email failed or timed out:", adminEmailResult.reason || "timeout");
+    try {
+      await sendAdminNotification(payload);
+    } catch (err) {
+      console.error("Admin email failed:", err.message || err);
       return res.status(502).json({
         success: false,
         error: "We could not process your application right now. Please try again shortly.",
       });
     }
 
-    if (userEmailResult.status === "rejected" || userEmailResult.value === null) {
-      // Admin already has it, so the application is still valid - just log it.
-      console.error("User confirmation email failed or timed out:", userEmailResult.reason || "timeout");
+    try {
+      await sendUserConfirmation(payload);
+      userEmailSent = true;
+    } catch (err) {
+      console.error("User confirmation email failed:", err.message || err);
     }
 
-    // 4. Send WhatsApp to admin + user (optional - only runs if configured)
     const [adminWaResult, userWaResult] = await Promise.allSettled([
-      withTimeout(() => sendAdminWhatsAppAlert({ name, phone, service, appNo }), 3000, null),
-      withTimeout(() => sendUserWhatsAppConfirmation({ name, phone, appNo }), 3000, null),
+      sendAdminWhatsAppAlert({ name: payload.name, phone: payload.phone, service: payload.service, appNo }),
+      sendUserWhatsAppConfirmation({ name: payload.name, phone: payload.phone, appNo }),
     ]);
 
     if (adminWaResult.status === "rejected") {
-      console.error("Admin WhatsApp alert failed:", adminWaResult.reason?.response?.data || adminWaResult.reason);
-    }
-    if (userWaResult.status === "rejected") {
-      console.error("User WhatsApp confirmation failed:", userWaResult.reason?.response?.data || userWaResult.reason);
+      console.error("Admin WhatsApp alert failed:", adminWaResult.reason?.message || adminWaResult.reason);
     }
 
-    // 5. Respond to the client
+    if (userWaResult.status === "rejected") {
+      console.error("User WhatsApp confirmation failed:", userWaResult.reason?.message || userWaResult.reason);
+    }
+
     return res.status(200).json({
       success: true,
       appNo,
-      userEmailSent: userEmailResult.status === "fulfilled",
+      userEmailSent,
       adminWhatsAppSent: adminWaResult.status === "fulfilled" && adminWaResult.value !== null,
       userWhatsAppSent: userWaResult.status === "fulfilled" && userWaResult.value !== null,
     });
