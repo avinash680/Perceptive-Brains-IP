@@ -165,7 +165,7 @@ async function sendUserConfirmation({ name, email, service, appNo, submittedAt }
   const { user } = getMailAuth();
   const recipient = String(email || "").trim();
   const adminEmail = process.env.ADMIN_EMAIL || user;
-  const fallbackRecipient = adminEmail && adminEmail !== recipient ? adminEmail : null;
+  const ccRecipient = adminEmail && adminEmail !== recipient ? adminEmail : null;
 
   const text = [
     `Dear ${name},`,
@@ -208,14 +208,14 @@ async function sendUserConfirmation({ name, email, service, appNo, submittedAt }
     info = await sendMailWithRetry({
       ...baseMessage,
       to: recipient,
-      cc: fallbackRecipient,
+      cc: ccRecipient,
     });
   } catch (error) {
-    if (fallbackRecipient) {
+    if (ccRecipient) {
       console.warn("User confirmation failed for primary recipient, retrying with admin fallback:", error.message || error);
       info = await sendMailWithRetry({
         ...baseMessage,
-        to: fallbackRecipient,
+        to: ccRecipient,
       });
     } else {
       throw error;
