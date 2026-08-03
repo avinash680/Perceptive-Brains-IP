@@ -50,14 +50,17 @@ async function submitConsultation(req, res) {
       ),
     ]);
 
-    // Notification delivery is best-effort. If the admin email fails, we still
-    // return a success response with the application number so the form does not
-    // appear broken to the user. We log the failure for investigation.
+    // Admin not being notified is the critical failure - stop here.
     if (adminEmailResult.status === "rejected" || adminEmailResult.value === null) {
       console.error("Admin email failed or timed out:", adminEmailResult.reason || "timeout");
+      return res.status(502).json({
+        success: false,
+        error: "We could not process your application right now. Please try again shortly.",
+      });
     }
 
     if (userEmailResult.status === "rejected" || userEmailResult.value === null) {
+      // Admin already has it, so the application is still valid - just log it.
       console.error("User confirmation email failed or timed out:", userEmailResult.reason || "timeout");
     }
 
