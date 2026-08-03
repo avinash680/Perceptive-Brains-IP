@@ -25,30 +25,44 @@ export async function warmUpConsultationApi() {
 export async function submitConsultation(form) {
   const url = getConsultationUrl();
   const start = performance.now();
+  const controller = new AbortController();
+  const timeoutId = window.setTimeout(() => controller.abort(), 10000);
 
-  const response = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(form),
-  });
-
-  const duration = performance.now() - start;
-
-  let data;
   try {
-    data = await response.json();
-  } catch {
-    data = { success: false, error: "Received an unreadable response from the server." };
-  }
+    const response = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(form),
+      signal: controller.signal,
+    });
 
-  if (!response.ok || !data.success) {
-    const errorMsg = data.error || `Server responded with status ${response.status}`;
-    const error = new Error(errorMsg);
-    error.status = response.status;
-    throw error;
-  }
+    const duration = performance.now() - start;
 
-  return { status: response.status, duration, data };
+    let data;
+    try {
+      data = await response.json();
+    } catch {
+      data = { success: false, error: "Received an unreadable response from the server." };
+    }
+
+    if (!response.ok || !data.success) {
+      const errorMsg = data.error || `Server responded with status ${response.status}`;
+      const error = new Error(errorMsg);
+      error.status = response.status;
+      throw error;
+    }
+
+    return { status: response.status, duration, data };
+  } catch (err) {
+    if (err?.name === "AbortError") {
+      const timeoutError = new Error("The request timed out. Please try again.");
+      timeoutError.status = 408;
+      throw timeoutError;
+    }
+    throw err;
+  } finally {
+    window.clearTimeout(timeoutId);
+  }
 }
 
 export function getConsultationErrorMessage(err, url) {

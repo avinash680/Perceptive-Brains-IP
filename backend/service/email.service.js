@@ -75,6 +75,18 @@ function withTimeout(promiseFactory, timeoutMs, fallbackValue) {
   });
 }
 
+const EMAIL_SEND_TIMEOUT_MS = Number(process.env.EMAIL_SEND_TIMEOUT_MS || 8000);
+
+async function sendMailWithTimeout(message, timeoutMs = EMAIL_SEND_TIMEOUT_MS) {
+  const info = await withTimeout(() => getTransporter().sendMail(message), timeoutMs, null);
+
+  if (!info) {
+    throw new Error(`Email delivery timed out after ${timeoutMs}ms.`);
+  }
+
+  return info;
+}
+
 const escapeHtml = (str = "") =>
   String(str)
     .replace(/&/g, "&amp;")
@@ -120,7 +132,7 @@ async function sendAdminNotification({ name, email, phone, service, message, app
     </div>
   `;
 
-  const info = await getTransporter().sendMail({
+  const info = await sendMailWithTimeout({
     from: `"Perceptive Brains IP" <${user}>`,
     to: adminEmail,
     replyTo: email,
@@ -163,7 +175,7 @@ async function sendUserConfirmation({ name, email, service, appNo, submittedAt }
     </div>
   `;
 
-  const info = await getTransporter().sendMail({
+  const info = await sendMailWithTimeout({
     from: `"Perceptive Brains IP" <${user}>`,
     to: recipient,
     replyTo: user,

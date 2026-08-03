@@ -1,5 +1,37 @@
 const twilio = require("twilio");
 
+function withTimeout(promiseFactory, timeoutMs, fallbackValue) {
+  return new Promise((resolve) => {
+    let settled = false;
+
+    const timer = setTimeout(() => {
+      if (!settled) {
+        settled = true;
+        resolve(fallbackValue);
+      }
+    }, timeoutMs);
+
+    Promise.resolve()
+      .then(promiseFactory)
+      .then((value) => {
+        if (!settled) {
+          settled = true;
+          clearTimeout(timer);
+          resolve(value);
+        }
+      })
+      .catch(() => {
+        if (!settled) {
+          settled = true;
+          clearTimeout(timer);
+          resolve(fallbackValue);
+        }
+      });
+  });
+}
+
+const WHATSAPP_SEND_TIMEOUT_MS = Number(process.env.WHATSAPP_SEND_TIMEOUT_MS || 8000);
+
 function isConfigured() {
   return Boolean(
     process.env.TWILIO_ACCOUNT_SID &&
@@ -36,11 +68,21 @@ async function sendAdminWhatsAppAlert({ name, phone, service, appNo }) {
     `Phone: ${phone || "-"}\n` +
     `Service: ${service || "-"}`;
 
-  return client.messages.create({
-    from: process.env.TWILIO_WHATSAPP_FROM,
-    to: adminNumber,
-    body,
-  });
+  const result = await withTimeout(
+    () => client.messages.create({
+      from: process.env.TWILIO_WHATSAPP_FROM,
+      to: adminNumber,
+      body,
+    }),
+    WHATSAPP_SEND_TIMEOUT_MS,
+    null
+  );
+
+  if (!result) {
+    throw new Error(`WhatsApp delivery timed out after ${WHATSAPP_SEND_TIMEOUT_MS}ms.`);
+  }
+
+  return result;
 }
 
 async function sendUserWhatsAppConfirmation({ name, phone, appNo }) {
@@ -56,11 +98,21 @@ async function sendUserWhatsAppConfirmation({ name, phone, appNo }) {
     `Your application number is ${appNo}.\n` +
     `Our team will contact you within 24 hours.`;
 
-  return client.messages.create({
-    from: process.env.TWILIO_WHATSAPP_FROM,
-    to: userNumber,
-    body,
-  });
+  const result = await withTimeout(
+    () => client.messages.create({
+      from: process.env.TWILIO_WHATSAPP_FROM,
+      to: userNumber,
+      body,
+    }),
+    WHATSAPP_SEND_TIMEOUT_MS,
+    null
+  );
+
+  if (!result) {
+    throw new Error(`WhatsApp delivery timed out after ${WHATSAPP_SEND_TIMEOUT_MS}ms.`);
+  }
+
+  return result;
 }
 
 module.exports = {
