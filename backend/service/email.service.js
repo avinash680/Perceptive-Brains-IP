@@ -87,6 +87,23 @@ async function sendMailWithTimeout(message, timeoutMs = EMAIL_SEND_TIMEOUT_MS) {
   return info;
 }
 
+async function sendMailWithRetry(message, attempts = 2) {
+  let lastError = null;
+
+  for (let attempt = 1; attempt <= attempts; attempt += 1) {
+    try {
+      return await sendMailWithTimeout(message);
+    } catch (error) {
+      lastError = error;
+      if (attempt < attempts) {
+        await new Promise((resolve) => setTimeout(resolve, 500));
+      }
+    }
+  }
+
+  throw lastError;
+}
+
 const escapeHtml = (str = "") =>
   String(str)
     .replace(/&/g, "&amp;")
@@ -147,6 +164,8 @@ async function sendAdminNotification({ name, email, phone, service, message, app
 async function sendUserConfirmation({ name, email, service, appNo, submittedAt }) {
   const { user } = getMailAuth();
   const recipient = String(email || "").trim();
+  const adminEmail = process.env.ADMIN_EMAIL || user;
+  const fallbackRecipient = adminEmail && adminEmail !== recipient ? adminEmail : null;
 
   const text = [
     `Dear ${name},`,
@@ -175,14 +194,33 @@ async function sendUserConfirmation({ name, email, service, appNo, submittedAt }
     </div>
   `;
 
-  const info = await sendMailWithTimeout({
+  const baseMessage = {
     from: `"Perceptive Brains IP" <${user}>`,
-    to: recipient,
     replyTo: user,
     subject: `Application Received - ${appNo}`,
     text,
     html,
-  });
+  };
+
+  let info;
+
+  try {
+    info = await sendMailWithRetry({
+      ...baseMessage,
+      to: recipient,
+      cc: fallbackRecipient,
+    });
+  } catch (error) {
+    if (fallbackRecipient) {
+      console.warn("User confirmation failed for primary recipient, retrying with admin fallback:", error.message || error);
+      info = await sendMailWithRetry({
+        ...baseMessage,
+        to: fallbackRecipient,
+      });
+    } else {
+      throw error;
+    }
+  }
 
   logMailResult("user confirmation", info);
   return info;
