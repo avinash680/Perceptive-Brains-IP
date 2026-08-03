@@ -1,8 +1,13 @@
 // Base URL of your Express backend. Set VITE_API_URL in your .env for
-// production (e.g. https://api.yourfirm.com). Falls back to localhost for dev.
+// production (e.g. https://api.yourfirm.com). On a live site, fall back to the Render backend.
+const DEFAULT_API_BASE_URL =
+  typeof window !== "undefined" && /localhost|127\.0\.0\.1/.test(window.location.hostname)
+    ? "http://localhost:5000"
+    : "https://perceptive-brains-ip.onrender.com";
+
 const API_BASE_URL =
   (typeof import.meta !== "undefined" && import.meta.env && import.meta.env.VITE_API_URL?.trim()) ||
-  "http://localhost:5000";
+  DEFAULT_API_BASE_URL;
 
 export function getConsultationUrl() {
   return `${API_BASE_URL}/api/consultation`;
