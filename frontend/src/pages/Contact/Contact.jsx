@@ -76,6 +76,7 @@ export default function ConsultationCompact() {
   const [appNo, setAppNo] = useState("");
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const [loadingText, setLoadingText] = useState("Submitting...");
 
   const update = (key) => (e) => {
     setForm((prev) => ({ ...prev, [key]: e.target.value }));
@@ -97,6 +98,11 @@ export default function ConsultationCompact() {
 
     setLoading(true);
     setErrorMsg("");
+    setLoadingText("Submitting...");
+
+    const timer = setTimeout(() => {
+      setLoadingText("Submitting... (Warming up backend server, please wait...)");
+    }, 3000);
 
     let url = null;
 
@@ -112,7 +118,9 @@ export default function ConsultationCompact() {
       setErrorMsg(getConsultationErrorMessage(err, url));
       setSubmitted(false);
     } finally {
+      clearTimeout(timer);
       setLoading(false);
+      setLoadingText("Submitting...");
     }
   };
 
@@ -336,7 +344,7 @@ export default function ConsultationCompact() {
                     {loading ? (
                       <>
                         <Loader2 size={15} className="spin" />
-                        Submitting...
+                        {loadingText}
                       </>
                     ) : (
                       <>

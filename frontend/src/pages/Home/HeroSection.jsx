@@ -90,6 +90,7 @@ export default function Hero() {
   const [appNo, setAppNo] = useState("");
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const [loadingText, setLoadingText] = useState("Submitting...");
 
   const update = (key) => (e) => {
     setForm((f) => ({ ...f, [key]: e.target.value }));
@@ -108,6 +109,11 @@ export default function Hero() {
 
     setLoading(true);
     setErrorMsg("");
+    setLoadingText("Submitting...");
+
+    const timer = setTimeout(() => {
+      setLoadingText("Submitting... (Warming up backend server, please wait...)");
+    }, 3000);
 
     let url = null;
 
@@ -123,7 +129,9 @@ export default function Hero() {
       setErrorMsg(getConsultationErrorMessage(err, url));
       setSubmitted(false);
     } finally {
+      clearTimeout(timer);
       setLoading(false);
+      setLoadingText("Submitting...");
     }
   };
 
@@ -348,7 +356,7 @@ export default function Hero() {
                       {loading ? (
                         <>
                           <Loader2 size={15} className="spin" />
-                          Submitting...
+                          {loadingText}
                         </>
                       ) : (
                         <>

@@ -53,6 +53,7 @@ export default function ContactForm({ serviceOptions }) {
   const [appNo, setAppNo] = useState("");
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const [loadingText, setLoadingText] = useState("Submitting...");
 
   const update = (key) => (e) => {
     setForm((prev) => ({ ...prev, [key]: e.target.value }));
@@ -75,6 +76,11 @@ export default function ContactForm({ serviceOptions }) {
     setErrorMsg("");
     setShowSuccess(false);
     setMessage("");
+    setLoadingText("Submitting...");
+
+    const timer = setTimeout(() => {
+      setLoadingText("Submitting... (Warming up backend server, please wait...)");
+    }, 3000);
 
     let url = null;
 
@@ -97,7 +103,9 @@ export default function ContactForm({ serviceOptions }) {
       setErrorMsg(getConsultationErrorMessage(err, url));
       setSubmitted(false);
     } finally {
+      clearTimeout(timer);
       setLoading(false);
+      setLoadingText("Submitting...");
     }
   };
 
@@ -240,7 +248,7 @@ export default function ContactForm({ serviceOptions }) {
               {loading ? (
                 <>
                   <Loader2 size={15} className="spin" />
-                  Submitting...
+                  {loadingText}
                 </>
               ) : (
                 <>

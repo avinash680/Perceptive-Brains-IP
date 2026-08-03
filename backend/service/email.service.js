@@ -1,12 +1,23 @@
 const nodemailer = require("nodemailer");
 
-const transporter = nodemailer.createTransport({
-  service: "gmail",
+// Build SMTP transport configuration based on env variables.
+// Fallback to Gmail configuration if SMTP_HOST is not provided.
+const smtpConfig = {
+  host: process.env.SMTP_HOST || "smtp.gmail.com",
+  port: parseInt(process.env.SMTP_PORT || "587", 10),
+  secure: process.env.SMTP_SECURE === "true", // true for port 465, false for 587/25
   auth: {
-    user: process.env.GMAIL_USER,
-    pass: process.env.GMAIL_APP_PASSWORD, // Gmail App Password, NOT your normal password
+    user: process.env.SMTP_USER || process.env.GMAIL_USER,
+    pass: process.env.SMTP_PASS || process.env.GMAIL_APP_PASSWORD,
   },
-});
+};
+
+// If using Google service helper specifically (when SMTP_HOST is omitted)
+if (!process.env.SMTP_HOST && (process.env.GMAIL_USER || (smtpConfig.auth.user && smtpConfig.auth.user.includes("gmail.com")))) {
+  smtpConfig.service = "gmail";
+}
+
+const transporter = nodemailer.createTransport(smtpConfig);
 
 const escapeHtml = (str = "") =>
   String(str)
@@ -36,7 +47,8 @@ function withTimeout(operation, timeoutMs, fallbackValue) {
 }
 
 async function sendAdminNotification({ name, email, phone, service, message, appNo, submittedAt }) {
-  const adminEmail = process.env.ADMIN_EMAIL || process.env.GMAIL_USER;
+  const emailFrom = process.env.SMTP_FROM || process.env.SMTP_USER || process.env.GMAIL_USER;
+  const adminEmail = process.env.ADMIN_EMAIL || emailFrom;
 
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 560px; margin: 0 auto; color:#1c1917;">
@@ -53,7 +65,7 @@ async function sendAdminNotification({ name, email, phone, service, message, app
   `;
 
   return transporter.sendMail({
-    from: `"IP Consultation Form" <${process.env.GMAIL_USER}>`,
+    from: `"IP Consultation Form" <${emailFrom}>`,
     to: adminEmail,
     replyTo: email,
     subject: `New Application ${appNo} - ${name}`,
@@ -62,6 +74,8 @@ async function sendAdminNotification({ name, email, phone, service, message, app
 }
 
 async function sendUserConfirmation({ name, email, service, appNo, submittedAt }) {
+  const emailFrom = process.env.SMTP_FROM || process.env.SMTP_USER || process.env.GMAIL_USER;
+
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 560px; margin: 0 auto; color:#1c1917;">
       <h2 style="color:#B45309; margin-bottom:4px;">Application Received</h2>
@@ -76,7 +90,7 @@ async function sendUserConfirmation({ name, email, service, appNo, submittedAt }
   `;
 
   return transporter.sendMail({
-    from: `"Your IP Law Firm" <${process.env.GMAIL_USER}>`,
+    from: `"Your IP Law Firm" <${emailFrom}>`,
     to: email,
     subject: `Application Received - ${appNo}`,
     html,
