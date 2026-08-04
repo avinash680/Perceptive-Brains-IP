@@ -540,7 +540,7 @@ function EntityTypeSelector({ selected, onToggle }) {
               aria-checked={checked}
               aria-label={cat.label}
               onClick={() => onToggle(cat.id)}
-              className={`relative flex-1 rounded-lg px-3 py-2.5 text-center transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0F9B8E] ${
+              className={`relative flex-1 rounded-lg px-3 py-2.5 text-center transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0F9B8E] ${
                 checked ? "text-white" : "text-[#0B2545]/70 hover:text-[#0B2545]"
               }`}
             >
@@ -548,7 +548,7 @@ function EntityTypeSelector({ selected, onToggle }) {
                 <motion.span
                   layoutId="applicant-toggle-pill"
                   transition={{ type: "spring", stiffness: 400, damping: 32 }}
-                  className="absolute inset-0 rounded-lg bg-gradient-to-r from-[#1E4E8C] to-[#0F9B8E] shadow-[0_6px_16px_-6px_rgba(15,155,142,0.55)]"
+                  className="absolute inset-0 rounded-lg bg-linear-to-r from-[#1E4E8C] to-[#0F9B8E] shadow-[0_6px_16px_-6px_rgba(15,155,142,0.55)]"
                 />
               )}
               <span className="relative text-xs font-medium leading-snug">{cat.label}</span>
@@ -578,7 +578,7 @@ function CategoryTabs({ active, setActive, selectedIds }) {
             role="tab"
             aria-selected={isActive}
             onClick={() => setActive(cat.id)}
-            className={`relative flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-medium transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0F9B8E] ${
+            className={`relative flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0F9B8E] ${
               isActive ? "text-white" : "text-[#0B2545]/70 hover:text-[#0B2545]"
             }`}
           >
@@ -586,14 +586,14 @@ function CategoryTabs({ active, setActive, selectedIds }) {
               <motion.span
                 layoutId="calc-tab-pill"
                 transition={{ type: "spring", stiffness: 400, damping: 32 }}
-                className="absolute inset-0 rounded-xl bg-gradient-to-r from-[#1E4E8C] to-[#0F9B8E] shadow-[0_6px_16px_-6px_rgba(15,155,142,0.55)]"
+                className="absolute inset-0 rounded-xl bg-linear-to-r from-[#1E4E8C] to-[#0F9B8E] shadow-[0_6px_16px_-6px_rgba(15,155,142,0.55)]"
               />
             )}
             <Icon className="relative h-4 w-4" strokeWidth={2} />
             <span className="relative">{cat.label}</span>
             {count > 0 && (
               <span
-                className={`relative ml-0.5 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full text-[10px] font-semibold ${
+                className={`relative ml-0.5 inline-flex items-center justify-center min-w-4.5 h-4.5 px-1 rounded-full text-[10px] font-semibold ${
                   isActive ? "bg-white/25 text-white" : "bg-[#0F9B8E]/15 text-[#0F9B8E]"
                 }`}
               >
@@ -670,7 +670,7 @@ function Toolbar({ query, setQuery, sortKey, setSortKey, onAddAll, allSelected }
 /* ------------------------------ Service row --------------------------------- */
 function ServiceRow({ svc, checked, onToggle, expanded, onExpand }) {
   return (
-    <div className={`border-b border-black/5 last:border-b-0 transition-colors ${checked ? "bg-[#0F9B8E]/[0.06]" : ""}`}>
+    <div className={`border-b border-black/5 last:border-b-0 transition-colors ${checked ? "bg-[#0F9B8E]/6" : ""}`}>
       <div className="grid grid-cols-[28px_2fr_1fr_1fr_1fr_0.8fr_36px] gap-2 px-4 md:px-5 py-4 items-center">
         <button
           role="checkbox"
@@ -746,6 +746,7 @@ function ServiceRow({ svc, checked, onToggle, expanded, onExpand }) {
   );
 }
 
+
 /* ------------------------------ Fee breakdown chart -------------------------- */
 function FeeBreakdownChart({ govtTotal, profTotal }) {
   const data = [
@@ -757,7 +758,7 @@ function FeeBreakdownChart({ govtTotal, profTotal }) {
 
   return (
     <div className="flex items-center gap-3">
-      <div className="h-[72px] w-[72px] shrink-0">
+      <div className="h-18 w-18 shrink-0">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <Pie
@@ -807,7 +808,7 @@ function SummaryPanel({ selectedServices, packageCategories, onClear, onDownload
   const hasVariableFees = selectedServices.some((s) => typeof s.govtFee !== "number");
 
   return (
-    <div className="rounded-2xl bg-gradient-to-br from-[#0B2545] to-[#0A1628] text-white p-5 md:p-6 sticky top-4">
+    <div className="rounded-2xl bg-linear-to-br from-[#0B2545] to-[#0A1628] text-white p-5 md:p-6 sticky top-4">
       <div className="flex items-center gap-2 mb-4">
         <Calculator className="h-4.5 w-4.5 text-[#7FD8CC]" />
         <h3 className="font-serif text-lg font-medium">Your Estimate</h3>
@@ -926,7 +927,7 @@ function SummaryPanel({ selectedServices, packageCategories, onClear, onDownload
           <div className="mt-5 flex gap-2">
             <button
               onClick={onDownload}
-              className="flex-1 inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-full bg-gradient-to-r from-[#E8C468] to-[#C9A227] text-[#0B2545] text-xs font-semibold hover:-translate-y-0.5 transition-all"
+              className="flex-1 inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-full bg-linear-to-r from-[#E8C468] to-[#C9A227] text-[#0B2545] text-xs font-semibold hover:-translate-y-0.5 transition-all"
             >
               <Download className="h-3.5 w-3.5" /> Download Quote
             </button>
@@ -1214,7 +1215,7 @@ export default function IPFeeCalculator() {
           </AnimatePresence>
 
           {categorySelectedCount > 0 && (
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-5 py-4 bg-[#0B2545]/[0.03] border-t border-black/5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-5 py-4 bg-[#0B2545]/3 border-t border-black/5">
               {catMeta.package && allInCategorySelected ? (
                 <>
                   <div className="text-xs text-[#0B2545]/60">

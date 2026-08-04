@@ -2,31 +2,45 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
-const rateLimit = require("express-rate-limit");
 const consultationRouter = require("./routes/consultation.route");
 const { verifyMailConnection } = require("./service/email.service");
 
 const app = express();
 app.set("trust proxy", 1);
 
-app.use(helmet());
+// This API is intentionally consumed by the separately hosted frontend. Helmet's
+// default CORP header is `same-origin`, which makes browsers discard an otherwise
+// valid CORS response. Allow cross-origin reads for these public JSON endpoints.
+app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }));
+
+const configuredOrigins = (process.env.CORS_ORIGIN || process.env.FRONTEND_ORIGIN || "*")
+  .split(",")
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+const allowAnyOrigin = configuredOrigins.includes("*");
+
 app.use(
   cors({
-    origin: process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(",") : "*",
+    origin(origin, callback) {
+      // Requests without an Origin header (health checks, curl, server-to-server)
+      // do not need CORS validation.
+      if (!origin || allowAnyOrigin || configuredOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      return callback(null, false);
+    },
+    methods: ["GET", "POST", "OPTIONS"],
+    allowedHeaders: ["Content-Type"],
+    maxAge: 86400,
   })
 );
 app.use(express.json({ limit: "100kb" }));
 
-const consultationLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 10,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { success: false, error: "Too many requests. Please try again later." },
-});
-
-app.use("/api/consultation", consultationLimiter, consultationRouter);
-app.use("/consultation", consultationLimiter, consultationRouter);
+// Only submissions consume the small abuse-prevention quota. The warm-up GET is
+// called when a visitor opens the page and must not make their later form POST 429.
+app.use("/api/consultation", consultationRouter);
+app.use("/consultation", consultationRouter);
 
 app.get("/health", (req, res) => res.json({ status: "ok" }));
 

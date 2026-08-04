@@ -85,7 +85,8 @@ export default function ConsultationCompact() {
 
   const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (event) => {
+    event?.preventDefault();
     // ---- client-side validation (catches issues before we ever hit the network) ----
     if (!form.name.trim()) {
       setErrorMsg("Please enter your full name.");
@@ -257,7 +258,7 @@ export default function ConsultationCompact() {
                     </div>
                   )}
 
-                  <div className="space-y-3">
+                  <form id="consultation-form" className="space-y-3" onSubmit={handleSubmit}>
                     <div className="grid grid-cols-2 gap-3">
                       <Field
                         icon={User}
@@ -333,11 +334,11 @@ export default function ConsultationCompact() {
                         />
                       </div>
                     </label>
-                  </div>
+                  </form>
 
                   <button
-                    type="button"
-                    onClick={handleSubmit}
+                    type="submit"
+                    form="consultation-form"
                     disabled={!form.name || !form.email || loading}
                     className="mt-4 flex w-full items-center justify-center gap-2 rounded-lg bg-amber-600 py-3 text-[13.5px] font-semibold tracking-wide text-slate-950 shadow-lg shadow-amber-600/20 transition-all duration-150 hover:bg-amber-500 hover:shadow-amber-600/30 disabled:cursor-not-allowed disabled:bg-stone-200 disabled:text-stone-400 disabled:shadow-none"
                   >

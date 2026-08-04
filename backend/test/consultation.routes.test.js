@@ -56,6 +56,20 @@ test("consultation warmup endpoint is served under /api/consultation", async () 
     const legacyResponse = await fetch("http://127.0.0.1:5011/consultation/warmup");
     assert.equal(legacyResponse.status, 200);
     assert.deepEqual(await legacyResponse.json(), { status: "warm" });
+
+    const origin = "https://perceptive-brains-ip-1.onrender.com";
+    const preflight = await fetch("http://127.0.0.1:5011/api/consultation", {
+      method: "OPTIONS",
+      headers: {
+        Origin: origin,
+        "Access-Control-Request-Method": "POST",
+        "Access-Control-Request-Headers": "content-type",
+      },
+    });
+    assert.equal(preflight.status, 204);
+    assert.equal(preflight.headers.get("access-control-allow-origin"), origin);
+    assert.match(preflight.headers.get("access-control-allow-methods"), /POST/);
+    assert.equal(preflight.headers.get("cross-origin-resource-policy"), "cross-origin");
   } finally {
     server.kill("SIGTERM");
     await once(server, "exit").catch(() => {});

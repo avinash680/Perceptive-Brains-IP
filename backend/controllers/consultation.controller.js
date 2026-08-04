@@ -38,19 +38,24 @@ async function submitConsultation(req, res) {
     let adminEmailError = null;
     let userEmailError = null;
 
-    try {
-      await sendAdminNotification(payload);
+    // These independent network calls used to run one after another, easily
+    // exceeding the browser request timeout when SMTP is slow.
+    const [adminResult, userResult] = await Promise.allSettled([
+      sendAdminNotification(payload),
+      sendUserConfirmation(payload),
+    ]);
+
+    if (adminResult.status === "fulfilled") {
       adminEmailSent = true;
-    } catch (err) {
-      adminEmailError = err.message || String(err);
+    } else {
+      adminEmailError = adminResult.reason?.message || String(adminResult.reason);
       console.error("Admin email failed:", adminEmailError);
     }
 
-    try {
-      await sendUserConfirmation(payload);
+    if (userResult.status === "fulfilled") {
       userEmailSent = true;
-    } catch (err) {
-      userEmailError = err.message || String(err);
+    } else {
+      userEmailError = userResult.reason?.message || String(userResult.reason);
       console.error("User confirmation email failed:", userEmailError);
     }
 

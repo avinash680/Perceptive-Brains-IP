@@ -26,7 +26,8 @@ export async function submitConsultation(form) {
   const url = getConsultationUrl();
   const start = performance.now();
   const controller = new AbortController();
-  const timeoutId = window.setTimeout(() => controller.abort(), 10000);
+  // Render cold starts and SMTP handshakes can exceed ten seconds.
+  const timeoutId = window.setTimeout(() => controller.abort(), 30000);
 
   try {
     const response = await fetch(url, {
