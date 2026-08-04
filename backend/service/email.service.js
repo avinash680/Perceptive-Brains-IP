@@ -91,7 +91,7 @@ function withTimeout(promiseFactory, timeoutMs) {
   });
 }
 
-const EMAIL_SEND_TIMEOUT_MS = Number(process.env.EMAIL_SEND_TIMEOUT_MS || 8000);
+const EMAIL_SEND_TIMEOUT_MS = Number(process.env.EMAIL_SEND_TIMEOUT_MS || 20000);
 
 async function sendMailWithTimeout(message, timeoutMs = EMAIL_SEND_TIMEOUT_MS) {
   const info = await withTimeout(() => getTransporter().sendMail(message), timeoutMs);

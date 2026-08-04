@@ -102,8 +102,8 @@ export default function ConsultationCompact() {
     setLoadingText("Submitting...");
 
     const timer = setTimeout(() => {
-      setLoadingText("Submitting... (Warming up backend server, please wait...)");
-    }, 3000);
+      setLoadingText("Please wait... waking up the server (first request can take ~60s)");
+    }, 5000);
 
     let url = null;
 
@@ -234,7 +234,7 @@ export default function ConsultationCompact() {
                   </h3>
                   <p className="mx-auto max-w-xs text-[13px] leading-5 text-stone-500">
                     A registered attorney will review your details and reach
-                    out within 24 hours.
+                    out within 24 hours. Check your email for a confirmation.
                   </p>
                 </div>
               ) : (

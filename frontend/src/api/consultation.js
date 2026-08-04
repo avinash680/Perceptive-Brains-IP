@@ -26,8 +26,8 @@ export async function submitConsultation(form) {
   const url = getConsultationUrl();
   const start = performance.now();
   const controller = new AbortController();
-  // Render cold starts and SMTP handshakes can exceed ten seconds.
-  const timeoutId = window.setTimeout(() => controller.abort(), 30000);
+  // Render free-tier cold starts can take 50-90 seconds. Keep timeout generous.
+  const timeoutId = window.setTimeout(() => controller.abort(), 90000);
 
   try {
     const response = await fetch(url, {
@@ -56,7 +56,9 @@ export async function submitConsultation(form) {
     return { status: response.status, duration, data };
   } catch (err) {
     if (err?.name === "AbortError") {
-      const timeoutError = new Error("The request timed out. Please try again.");
+      const timeoutError = new Error(
+        "The server is still waking up (Render cold start can take ~60s). Please wait a moment and try again."
+      );
       timeoutError.status = 408;
       throw timeoutError;
     }
