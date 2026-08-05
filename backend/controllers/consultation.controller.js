@@ -33,33 +33,36 @@ async function submitConsultation(req, res) {
       submittedAt,
     };
 
-    // ─── Respond immediately so the browser never hits a timeout ─────────────
-    // Emails are sent fire-and-forget AFTER the response is flushed.
-    // This means SMTP latency (which can take 10-20s on a cold Render instance)
-    // never blocks the HTTP request.
+    const [adminResult, userResult] = await Promise.allSettled([
+      sendAdminNotification(payload),
+      sendUserConfirmation(payload),
+    ]);
+
+    const adminEmailSent = adminResult.status === "fulfilled";
+    const userEmailSent = userResult.status === "fulfilled";
+    const adminEmailError = adminResult.status === "rejected" ? String(adminResult.reason?.message || adminResult.reason) : null;
+    const userEmailError = userResult.status === "rejected" ? String(userResult.reason?.message || userResult.reason) : null;
+
+    if (adminEmailSent) {
+      console.info("[email] Admin notification sent for", appNo);
+    } else {
+      console.error("[email] Admin notification failed:", adminEmailError);
+    }
+
+    if (userEmailSent) {
+      console.info("[email] User confirmation sent for", appNo);
+    } else {
+      console.error("[email] User confirmation failed:", userEmailError);
+    }
+
     res.status(200).json({
       success: true,
       appNo,
-      userEmailSent: true,   // optimistic – emails will arrive shortly
-      adminEmailSent: true,
-    });
-
-    // ─── Send both emails in the background ───────────────────────────────────
-    Promise.allSettled([
-      sendAdminNotification(payload),
-      sendUserConfirmation(payload),
-    ]).then(([adminResult, userResult]) => {
-      if (adminResult.status === "rejected") {
-        console.error("[email] Admin notification failed:", adminResult.reason?.message || adminResult.reason);
-      } else {
-        console.info("[email] Admin notification sent for", appNo);
-      }
-
-      if (userResult.status === "rejected") {
-        console.error("[email] User confirmation failed:", userResult.reason?.message || userResult.reason);
-      } else {
-        console.info("[email] User confirmation sent for", appNo);
-      }
+      adminEmailSent,
+      userEmailSent,
+      adminEmailError,
+      userEmailError,
+      notificationsPending: !adminEmailSent || !userEmailSent,
     });
 
   } catch (err) {

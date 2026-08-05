@@ -76,7 +76,7 @@ export function getConsultationErrorMessage(err, url) {
     !/localhost|127\.0\.0\.1/.test(window.location.hostname);
 
   if (isLocalApi && isLiveSite) {
-    return "Configuration Error: The live website is trying to reach localhost. Set VITE_API_URL to https://perceptive-brains-ip.onrender.com on your frontend hosting (Render/Vercel).";
+    return "Configuration Error: The live website is trying to reach localhost. Set VITE_API_URL to https://perceptive-brains-ip-xps4.onrender.com on your frontend hosting (Render/Vercel).";
   }
 
   if (err?.name === "TypeError" || /fetch/i.test(err?.message || "")) {

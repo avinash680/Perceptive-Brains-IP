@@ -22,11 +22,11 @@ export function getApiBase() {
 
     // Frontend static site on Render (-1) talks to the API service (no -1).
     if (host.includes("perceptive-brains-ip")) {
-      return "https://perceptive-brains-ip.onrender.com";
+      return "https://perceptive-brains-ip-xps4.onrender.com";
     }
   }
 
-  return "https://perceptive-brains-ip.onrender.com";
+  return "https://perceptive-brains-ip-xps4.onrender.com";
 }
 
 export default getApiBase;
