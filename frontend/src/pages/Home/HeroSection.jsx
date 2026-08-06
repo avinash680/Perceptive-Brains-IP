@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   getConsultationErrorMessage,
   getConsultationUrl,
@@ -86,6 +86,13 @@ function Field({ icon: Icon, label, type, placeholder, value, onChange }) {
 export default function Hero() {
   useConsultationWarmup();
   const [form, setForm] = useState(initialForm);
+
+  useEffect(() => {
+    if (!heroImage) return;
+
+    const img = new Image();
+    img.src = heroImage;
+  }, []);
   const [submitted, setSubmitted] = useState(false);
   const [appNo, setAppNo] = useState("");
   const [loading, setLoading] = useState(false);
@@ -144,7 +151,7 @@ export default function Hero() {
   };
 
   return (
-    <section className="relative overflow-hidden bg-cover bg-center" style={heroStyle}>
+    <section className="relative min-h-[78vh] overflow-hidden bg-cover bg-center sm:min-h-[82vh]" style={heroStyle}>
       {/* Blueprint grid — faint, technical texture instead of flat overlay */}
       <div
         aria-hidden="true"
@@ -168,15 +175,15 @@ export default function Hero() {
         </div>
       </div>
 
-      <div className="relative z-10 mx-auto max-w-6xl px-6 py-14 lg:px-8 lg:py-16">
-        <div className="grid gap-14 lg:grid-cols-[1.1fr_0.9fr] lg:items-center lg:gap-10">
+      <div className="relative z-10 mx-auto max-w-7xl px-5 py-10 sm:px-6 sm:py-14 lg:px-8 lg:py-16">
+        <div className="grid gap-10 lg:grid-cols-[1.08fr_0.92fr] lg:items-center lg:gap-10">
           {/* Left column */}
           <div>
             <p className="mb-5 text-xs uppercase tracking-[4px] text-[#d6a52a]">
               Premier IP legal services · India &amp; global
             </p>
 
-            <h1 className="font-serif text-4xl font-light leading-[1.1] text-white sm:text-5xl lg:text-[3.25rem]">
+            <h1 className="font-serif text-3.5rem font-light leading-[1.08] text-white sm:text-5xl lg:text-[3.25rem]">
               Perceptive Brains IP Protecting innovation with precision,{" "}
               <span className="italic text-[#d6a52a]">strategy,<br />legal </span>{" "}
               &amp; excellence.
@@ -186,20 +193,24 @@ export default function Hero() {
               Perceptive Brains IP is a trusted intellectual property law firm. Delivering trusted Intellectual Property solutions in patents, trademarks, designs, copyrights, and IP strategy to empower innovators and businesses.
             </p>
 
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Link to="/contact">
-                <button className="group flex items-center gap-2 rounded-full bg-[#d6a52a] px-6 py-3 text-sm font-semibold text-black transition-all duration-200 hover:-translate-y-0.5 hover:bg-yellow-500 hover:shadow-[0_14px_30px_-10px_rgba(214,165,42,0.6)]">
-                  Book free consultation
-                  <ArrowRight size={16} className="transition-transform duration-200 group-hover:translate-x-0.5" />
-                </button>
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+              <Link
+                to="/contact"
+                className="group inline-flex items-center justify-center gap-2 rounded-full bg-[#d6a52a] px-6 py-3 text-sm font-semibold text-black transition-all duration-200 hover:-translate-y-0.5 hover:bg-yellow-500 hover:shadow-[0_14px_30px_-10px_rgba(214,165,42,0.6)]"
+              >
+                Book free consultation
+                <ArrowRight size={16} className="transition-transform duration-200 group-hover:translate-x-0.5" />
               </Link>
               <Link
                 to="/services"
-                className="rounded-full border border-gray-600 px-6 py-3 text-sm font-medium text-white transition-colors duration-200 hover:border-white hover:bg-white hover:text-black"
+                className="inline-flex items-center justify-center rounded-full border border-gray-600 px-6 py-3 text-sm font-medium text-white transition-colors duration-200 hover:border-white hover:bg-white hover:text-black"
               >
                 Explore services
               </Link>
-              <Link to="/services/patent-drafting-filing#fees" className="rounded-full border border-gray-600 px-6 py-3 text-sm font-medium text-white transition-colors duration-200 hover:border-white hover:bg-white hover:text-black">
+              <Link
+                to="/services/patent-drafting-filing#fees"
+                className="inline-flex items-center justify-center rounded-full border border-gray-600 px-6 py-3 text-sm font-medium text-white transition-colors duration-200 hover:border-white hover:bg-white hover:text-black"
+              >
                 Fees Schedule
               </Link>
             </div>
@@ -216,7 +227,7 @@ export default function Hero() {
 
           {/* Right column — application form */}
           <div className="flex justify-center lg:justify-end">
-            <div className="relative w-full max-w-sm">
+            <div className="relative w-full max-w-[26rem]">
               <div className="absolute -right-3 -top-7 z-20 hidden h-[4.5rem] w-[4.5rem] items-center justify-center sm:flex">
                 <svg viewBox="0 0 100 100" className="seal-ring h-full w-full">
                   <defs>

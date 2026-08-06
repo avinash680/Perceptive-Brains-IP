@@ -1,5 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import OptimizedImage from "../../components/OptimizedImage";
 import {
   FileText,
   Shield,
@@ -143,10 +144,12 @@ export default function Services() {
                 {/* Photo — the card is wrapped around it, with the seal and
                     docket code inlaid on the image like an embossed stamp */}
                 <div className="relative h-48 overflow-hidden rounded-t-[2rem]">
-                  <img
+                  <OptimizedImage
                     src={service.image}
                     alt={service.title}
-                    className="h-full w-full object-cover grayscale-[15%] transition-all duration-700 ease-out group-hover:scale-[1.06] group-hover:grayscale-0"
+                    eager={index < 2}
+                    containerClassName="h-full"
+                    className="grayscale-[15%] transition-all duration-700 ease-out group-hover:scale-[1.06] group-hover:grayscale-0"
                   />
                   {/* Ledger-tint wash so every photo, whatever its source colours,
                       reads as part of the same registry */}

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { BadgeCheck, Mail } from "lucide-react";
 import { FaLinkedinIn } from "react-icons/fa";
+import OptimizedImage from "../../components/OptimizedImage";
 import { team as aboutTeam } from "../About/data/aboutData";
 
 const team = aboutTeam;
@@ -15,10 +16,12 @@ function TeamCard({ member, index }) {
 
       <div className="relative flex h-full flex-col overflow-hidden rounded-[24px] bg-slate-900/80 backdrop-blur-xl">
         <div className="relative aspect-[4/5] w-full overflow-hidden">
-          <img
+          <OptimizedImage
             src={member.photo}
             alt={member.name}
-            className="h-full w-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-110"
+            eager={index < 2}
+            containerClassName="h-full"
+            className="object-center transition-transform duration-700 ease-out group-hover:scale-110"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/10 to-transparent" />
           <div className="absolute bottom-3 left-3 inline-flex items-center gap-1 rounded-full bg-slate-950/70 px-3 py-1 text-xs font-medium text-[#C9A227] backdrop-blur-md">
