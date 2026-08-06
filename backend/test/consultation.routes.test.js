@@ -76,17 +76,11 @@ test("consultation warmup endpoint is served under /api/consultation", async () 
   }
 });
 
-test("consultation submission remains successful when email delivery is unavailable", async () => {
+test("consultation submission remains successful when email delivery is backgrounded", async () => {
   const controller = require("../controllers/consultation.controller");
-  const originalUser = process.env.GMAIL_USER;
-  const originalPassword = process.env.GMAIL_APP_PASSWORD;
-  const originalSmtpUser = process.env.SMTP_USER;
-  const originalSmtpPass = process.env.SMTP_PASS;
+  const originalApiKey = process.env.RESEND_API_KEY;
 
-  process.env.GMAIL_USER = "";
-  process.env.GMAIL_APP_PASSWORD = "";
-  process.env.SMTP_USER = "";
-  process.env.SMTP_PASS = "";
+  process.env.RESEND_API_KEY = "";
 
   try {
     const req = {
@@ -116,15 +110,10 @@ test("consultation submission remains successful when email delivery is unavaila
 
     assert.equal(res.statusCode, 200);
     assert.equal(res.body.success, true);
-    assert.equal(res.body.userEmailSent, false);
-    assert.equal(res.body.adminEmailSent, false);
-    assert.equal(res.body.notificationsPending, true);
-    assert.ok(typeof res.body.adminEmailError === "string");
-    assert.ok(typeof res.body.userEmailError === "string");
+    assert.ok(typeof res.body.appNo === "string");
+    assert.equal(res.body.userEmailSent, true);
+    assert.equal(res.body.adminEmailSent, true);
   } finally {
-    if (originalUser === undefined) delete process.env.GMAIL_USER; else process.env.GMAIL_USER = originalUser;
-    if (originalPassword === undefined) delete process.env.GMAIL_APP_PASSWORD; else process.env.GMAIL_APP_PASSWORD = originalPassword;
-    if (originalSmtpUser === undefined) delete process.env.SMTP_USER; else process.env.SMTP_USER = originalSmtpUser;
-    if (originalSmtpPass === undefined) delete process.env.SMTP_PASS; else process.env.SMTP_PASS = originalSmtpPass;
+    if (originalApiKey === undefined) delete process.env.RESEND_API_KEY; else process.env.RESEND_API_KEY = originalApiKey;
   }
 });

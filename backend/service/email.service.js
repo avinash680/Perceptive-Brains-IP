@@ -1,118 +1,40 @@
-const nodemailer = require("nodemailer");
+const { Resend } = require("resend");
 
-function normalizePass(value) {
-  return String(value || "").trim().replace(/\s+/g, "");
+function getResendApiKey() {
+  return process.env.RESEND_API_KEY || "";
 }
 
-function getMailAuth() {
-  const user = process.env.GMAIL_USER || process.env.SMTP_USER || process.env.EMAIL_USER;
-  const pass = normalizePass(process.env.GMAIL_APP_PASSWORD || process.env.SMTP_PASS || process.env.EMAIL_PASS);
-
-  if (!user || !pass) {
-    throw new Error(
-      "SMTP is not configured. Set GMAIL_USER and GMAIL_APP_PASSWORD, or provide SMTP_HOST/SMTP_PORT/SMTP_USER/SMTP_PASS in your environment."
-    );
+function getResendClient() {
+  const apiKey = getResendApiKey();
+  if (!apiKey) {
+    throw new Error("Resend API key is not configured. Set RESEND_API_KEY in your environment.");
   }
-
-  return { user, pass };
-}
-
-function buildTransportConfig() {
-  const auth = getMailAuth();
-  const host = process.env.SMTP_HOST || process.env.GMAIL_HOST || "smtp.gmail.com";
-  const port = Number(process.env.SMTP_PORT || process.env.GMAIL_PORT || 587);
-  const secure = String(process.env.SMTP_SECURE || "").toLowerCase() === "true" || port === 465;
-  const family = Number(process.env.SMTP_FAMILY || 4);
-
-  return {
-    host,
-    port,
-    secure,
-    auth,
-    pool: false,
-    family,
-  };
-}
-
-let transporter = null;
-
-function getTransporter() {
-  if (transporter) {
-    return transporter;
-  }
-
-  transporter = nodemailer.createTransport(buildTransportConfig());
-
-  return transporter;
+  return new Resend(apiKey);
 }
 
 function getFromAddress() {
-  const auth = getMailAuth();
   const fromName = process.env.MAIL_FROM_NAME || "Perceptive Brains IP";
-  const fromAddress = process.env.MAIL_FROM_ADDRESS || auth.user;
-  return `"${fromName}" <${fromAddress}>`;
-}
+  const fromEmail =
+    process.env.MAIL_FROM_ADDRESS ||
+    process.env.MAIL_FROM ||
+    process.env.SMTP_USER ||
+    process.env.GMAIL_USER ||
+    "onboarding@resend.dev";
 
-async function verifyMailConnection() {
-  try {
-    await getTransporter().verify();
-    const { user } = getMailAuth();
-    console.info("[email] Gmail SMTP verified for:", user);
-    return { ok: true };
-  } catch (err) {
-    console.error("[email] Gmail SMTP verification failed:", err.message || err);
-    return { ok: false, error: err.message || String(err) };
+  if (fromEmail.includes("<")) {
+    return fromEmail;
   }
+  return `"${fromName}" <${fromEmail}>`;
 }
 
-function withTimeout(promiseFactory, timeoutMs) {
-  return new Promise((resolve, reject) => {
-    let timedOut = false;
-
-    const timer = setTimeout(() => {
-      timedOut = true;
-      reject(new Error(`Email delivery timed out after ${timeoutMs}ms.`));
-    }, timeoutMs);
-
-    Promise.resolve()
-      .then(promiseFactory)
-      .then((value) => {
-        if (!timedOut) {
-          clearTimeout(timer);
-          resolve(value);
-        }
-      })
-      .catch((error) => {
-        if (!timedOut) {
-          clearTimeout(timer);
-          reject(error);
-        }
-      });
-  });
-}
-
-const EMAIL_SEND_TIMEOUT_MS = Number(process.env.EMAIL_SEND_TIMEOUT_MS || 20000);
-
-async function sendMailWithTimeout(message, timeoutMs = EMAIL_SEND_TIMEOUT_MS) {
-  const info = await withTimeout(() => getTransporter().sendMail(message), timeoutMs);
-  return info;
-}
-
-async function sendMailWithRetry(message, attempts = 2) {
-  let lastError = null;
-
-  for (let attempt = 1; attempt <= attempts; attempt += 1) {
-    try {
-      return await sendMailWithTimeout(message);
-    } catch (error) {
-      lastError = error;
-      if (attempt < attempts) {
-        await new Promise((resolve) => setTimeout(resolve, 500));
-      }
-    }
+function verifyMailConnection() {
+  const apiKey = getResendApiKey();
+  if (!apiKey) {
+    console.warn("[email] RESEND_API_KEY missing. Email sending is disabled.");
+    return { ok: false, error: "RESEND_API_KEY missing" };
   }
-
-  throw lastError;
+  console.info("[email] Resend configured successfully.");
+  return { ok: true };
 }
 
 const escapeHtml = (str = "") =>
@@ -123,28 +45,14 @@ const escapeHtml = (str = "") =>
     .replace(/"/g, "&quot;");
 
 const formatDate = (date) =>
-  date.toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" });
-
-function logMailResult(label, info) {
-  console.info(`[email] ${label} result:`, {
-    messageId: info.messageId,
-    accepted: info.accepted,
-    rejected: info.rejected,
-    response: info.response,
-  });
-
-  if (info.rejected?.length) {
-    throw new Error(`${label} rejected by Gmail: ${info.rejected.join(", ")}`);
-  }
-
-  if (!info.accepted?.length) {
-    throw new Error(`${label} was not accepted by Gmail.`);
-  }
-}
+  new Date(date).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" });
 
 async function sendAdminNotification({ name, email, phone, service, message, appNo, submittedAt }) {
-  const { user } = getMailAuth();
-  const adminEmail = process.env.ADMIN_EMAIL || user;
+  const resend = getResendClient();
+  const adminEmail = process.env.ADMIN_EMAIL || process.env.GMAIL_USER || process.env.SMTP_USER;
+  if (!adminEmail) {
+    throw new Error("ADMIN_EMAIL is not configured.");
+  }
   const fromAddress = getFromAddress();
 
   const html = `
@@ -161,24 +69,32 @@ async function sendAdminNotification({ name, email, phone, service, message, app
     </div>
   `;
 
-  const info = await sendMailWithTimeout({
+  const { data, error } = await resend.emails.send({
     from: fromAddress,
-    to: adminEmail,
+    to: [adminEmail],
     replyTo: email,
     subject: `New Application ${appNo} - ${name}`,
     html,
   });
 
-  logMailResult("admin notification", info);
-  return info;
+  if (error) {
+    console.error("[email] Resend error sending admin notification:", error);
+    throw new Error(`Resend notification failed: ${error.message || JSON.stringify(error)}`);
+  }
+
+  console.info("[email] Admin notification sent:", data);
+  return data;
 }
 
 async function sendUserConfirmation({ name, email, service, appNo, submittedAt }) {
-  const { user } = getMailAuth();
+  const resend = getResendClient();
   const recipient = String(email || "").trim();
-  const adminEmail = process.env.ADMIN_EMAIL || user;
-  const ccRecipient = adminEmail && adminEmail !== recipient ? adminEmail : undefined;
+  if (!recipient) {
+    throw new Error("Recipient email is required for user confirmation.");
+  }
+
   const fromAddress = getFromAddress();
+  const adminEmail = process.env.ADMIN_EMAIL || process.env.GMAIL_USER || process.env.SMTP_USER;
 
   const text = [
     `Dear ${name},`,
@@ -207,49 +123,28 @@ async function sendUserConfirmation({ name, email, service, appNo, submittedAt }
     </div>
   `;
 
-  const baseMessage = {
+  const { data, error } = await resend.emails.send({
     from: fromAddress,
-    replyTo: user,
+    to: [recipient],
+    replyTo: adminEmail || undefined,
     subject: `Application Received - ${appNo}`,
     text,
     html,
-  };
+  });
 
-  let info;
-
-  try {
-    const message = {
-      ...baseMessage,
-      to: recipient,
-    };
-    if (ccRecipient) {
-      message.cc = ccRecipient;
-    }
-
-    info = await sendMailWithRetry(message);
-  } catch (error) {
-    if (ccRecipient) {
-      console.warn("User confirmation failed for primary recipient, retrying with admin fallback:", error.message || error);
-      info = await sendMailWithRetry({
-        ...baseMessage,
-        to: ccRecipient,
-      });
-    } else {
-      throw error;
-    }
+  if (error) {
+    console.error("[email] Resend error sending user confirmation:", error);
+    throw new Error(`Resend confirmation failed: ${error.message || JSON.stringify(error)}`);
   }
 
-  logMailResult("user confirmation", info);
-  return info;
+  console.info("[email] User confirmation sent:", data);
+  return data;
 }
 
 module.exports = {
   sendAdminNotification,
   sendUserConfirmation,
   verifyMailConnection,
-  withTimeout,
-  getTransporter,
-  buildTransportConfig,
-  getMailAuth,
+  getResendClient,
   getFromAddress,
 };
