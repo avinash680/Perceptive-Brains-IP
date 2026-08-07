@@ -4,12 +4,46 @@ function getResendApiKey() {
   return process.env.RESEND_API_KEY || "";
 }
 
-function getResendClient() {
-  const apiKey = getResendApiKey();
-  if (!apiKey) {
-    throw new Error("Resend API key is not configured. Set RESEND_API_KEY in your environment.");
+function getMailAuth() {
+  const user = process.env.GMAIL_USER || process.env.SMTP_USER || process.env.EMAIL_USER;
+  const pass = normalizePass(process.env.GMAIL_APP_PASSWORD || process.env.SMTP_PASS || process.env.EMAIL_PASS);
+
+  if (!user || !pass) {
+    throw new Error(
+      "SMTP is not configured. Set GMAIL_USER and GMAIL_APP_PASSWORD, or provide SMTP_HOST/SMTP_PORT/SMTP_USER/SMTP_PASS in your environment."
+    );
   }
-  return new Resend(apiKey);
+
+  return { user, pass };
+}
+
+function buildTransportConfig() {
+  const auth = getMailAuth();
+  const host = process.env.SMTP_HOST || process.env.GMAIL_HOST || "smtp.gmail.com";
+  const port = Number(process.env.SMTP_PORT || process.env.GMAIL_PORT || 587);
+  const secure = String(process.env.SMTP_SECURE || "").toLowerCase() === "true" || port === 465;
+  const family = Number(process.env.SMTP_FAMILY || 4);
+
+  return {
+    host,
+    port,
+    secure,
+    auth,
+    pool: false,
+    family,
+  };
+}
+
+let transporter = null;
+
+function getTransporter() {
+  if (transporter) {
+    return transporter;
+  }
+
+  transporter = nodemailer.createTransport(buildTransportConfig());
+
+  return transporter;
 }
 
 function getFromAddress() {
@@ -99,26 +133,30 @@ async function sendUserConfirmation({ name, email, service, appNo, submittedAt }
   const text = [
     `Dear ${name},`,
     "",
-    "Thank you for reaching out. Your consultation request has been received.",
+    "Thank you for submitting your consultation application.",
     "",
     `Application No: ${appNo}`,
     `Service: ${service || "-"}`,
     `Submitted: ${formatDate(submittedAt)}`,
     "",
-    "A registered attorney will review your details and reach out within 24 hours.",
+    "We have received your details and our team will review your application shortly.",
     "",
+    "If you have any follow-up questions, please reply to this message.",
+    "",
+    "Thank you,",
     "Perceptive Brains IP",
   ].join("\n");
 
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 560px; margin: 0 auto; color:#1c1917;">
-      <h2 style="color:#B45309; margin-bottom:4px;">Application Received</h2>
+      <h2 style="color:#B45309; margin-bottom:4px;">Thank You for Your Submission</h2>
       <p>Dear ${escapeHtml(name)},</p>
-      <p>Thank you for reaching out. Your consultation request has been received.</p>
+      <p>Thank you for submitting your consultation application. We have received your details successfully.</p>
       <p><strong>Application No:</strong> ${escapeHtml(appNo)}</p>
       <p><strong>Service:</strong> ${escapeHtml(service || "-")}</p>
       <p><strong>Submitted:</strong> ${formatDate(submittedAt)}</p>
-      <p>A registered attorney will review your details and reach out within 24 hours.</p>
+      <p>Our team will review your request and contact you shortly with the next steps.</p>
+      <p>If you need to update anything, please reply to this email.</p>
       <p style="color:#78716c; font-size:12px;">This is an automated confirmation. Please keep your Application No. for reference.</p>
     </div>
   `;
