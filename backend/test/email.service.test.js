@@ -1,6 +1,6 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
-const { withTimeout, buildTransportConfig } = require("../service/email.service");
+const { getFromAddress, verifyMailConnection, getResendClient } = require("../service/email.service");
 
 function withEnv(overrides, fn) {
   const previousValues = {};
@@ -27,51 +27,29 @@ function withEnv(overrides, fn) {
   }
 }
 
-test("withTimeout returns the fallback value when the operation times out", async () => {
-  const result = await withTimeout(() => new Promise(() => {}), 20, "fallback");
-  assert.equal(result, "fallback");
+test("verifyMailConnection reports missing key when RESEND_API_KEY is unset", () => {
+  withEnv({ RESEND_API_KEY: undefined }, () => {
+    const result = verifyMailConnection();
+    assert.equal(result.ok, false);
+    assert.equal(result.error, "RESEND_API_KEY missing");
+  });
 });
 
-test("withTimeout returns the real value when the operation resolves first", async () => {
-  const result = await withTimeout(() => Promise.resolve("ok"), 50, "fallback");
-  assert.equal(result, "ok");
+test("verifyMailConnection reports ok when RESEND_API_KEY is present", () => {
+  withEnv({ RESEND_API_KEY: "re_test_12345" }, () => {
+    const result = verifyMailConnection();
+    assert.equal(result.ok, true);
+  });
 });
 
-test("buildTransportConfig uses explicit SMTP settings when provided", () => {
-  const config = withEnv(
-    {
-      SMTP_HOST: "smtp.example.com",
-      SMTP_PORT: "2525",
-      SMTP_SECURE: "true",
-      SMTP_USER: "sender@example.com",
-      SMTP_PASS: "secret-pass",
-    },
-    () => buildTransportConfig()
-  );
-
-  assert.equal(config.host, "smtp.example.com");
-  assert.equal(config.port, 2525);
-  assert.equal(config.secure, true);
-  assert.deepEqual(config.auth, { user: "sender@example.com", pass: "secret-pass" });
+test("getFromAddress uses MAIL_FROM env var when configured", () => {
+  withEnv({ MAIL_FROM: '"Custom Firm" <contact@example.com>' }, () => {
+    assert.equal(getFromAddress(), '"Custom Firm" <contact@example.com>');
+  });
 });
 
-test("buildTransportConfig falls back to Gmail when no SMTP host is provided", () => {
-  const config = withEnv(
-    {
-      GMAIL_USER: "sender@gmail.com",
-      GMAIL_APP_PASSWORD: "app-password",
-      SMTP_HOST: undefined,
-      SMTP_PORT: undefined,
-      SMTP_SECURE: undefined,
-      SMTP_USER: undefined,
-      SMTP_PASS: undefined,
-    },
-    () => buildTransportConfig()
-  );
-
-  assert.equal(config.host, "smtp.gmail.com");
-  assert.equal(config.port, 587);
-  assert.equal(config.secure, false);
-  assert.equal(config.family, 4);
-  assert.deepEqual(config.auth, { user: "sender@gmail.com", pass: "app-password" });
+test("getResendClient throws descriptive error when RESEND_API_KEY is missing", () => {
+  withEnv({ RESEND_API_KEY: undefined }, () => {
+    assert.throws(() => getResendClient(), /RESEND_API_KEY in your environment/);
+  });
 });

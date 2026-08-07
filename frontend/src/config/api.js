@@ -5,8 +5,11 @@
  * - Live frontend (perceptive-brains-ip-1) -> Render backend (perceptive-brains-ip).
  */
 export function getApiBase() {
-  const configuredUrl = import.meta.env.VITE_API_URL?.trim();
+  let configuredUrl = import.meta.env.VITE_API_URL?.trim();
   if (configuredUrl) {
+    if (!/^https?:\/\//i.test(configuredUrl)) {
+      configuredUrl = `http://${configuredUrl}`;
+    }
     return configuredUrl.replace(/\/$/, "");
   }
 
