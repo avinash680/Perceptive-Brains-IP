@@ -41,11 +41,36 @@ function WhatsAppGlyph({ size = 18, className = "" }) {
 }
 
 const socialLinks = [
-  { icon: WhatsAppGlyph, link: "https://wa.me/000000000000", label: "WhatsApp" },
-  { icon: FaLinkedinIn, link: "https://linkedin.com", label: "LinkedIn" },
-  { icon: FaTwitter, link: "https://twitter.com", label: "Twitter" },
-  { icon: FaFacebookF, link: "https://facebook.com", label: "Facebook" },
-  { icon: FaInstagram, link: "https://instagram.com", label: "Instagram" },
+  {
+    icon: WhatsAppGlyph,
+    link: "https://wa.me/000000000000",
+    label: "WhatsApp",
+    bg: "bg-[#25D366]",
+  },
+  {
+    icon: FaLinkedinIn,
+    link: "https://linkedin.com",
+    label: "LinkedIn",
+    bg: "bg-[#0A66C2]",
+  },
+  {
+    icon: FaTwitter,
+    link: "https://twitter.com",
+    label: "Twitter",
+    bg: "bg-gradient-to-br from-[#1DA1F2] to-[#0C2340]",
+  },
+  {
+    icon: FaFacebookF,
+    link: "https://facebook.com",
+    label: "Facebook",
+    bg: "bg-[#1877F2]",
+  },
+  {
+    icon: FaInstagram,
+    link: "https://instagram.com",
+    label: "Instagram",
+    bg: "bg-gradient-to-br from-[#FEDA75] via-[#D62976] to-[#4F5BD5]",
+  },
 ];
 
 export default function SocialFab() {
@@ -75,7 +100,7 @@ export default function SocialFab() {
     >
       {/* dropdown stops */}
       <ul className="flex flex-col items-end gap-2.5">
-        {socialLinks.map(({ icon: Icon, link, label }, i) => {
+        {socialLinks.map(({ icon: Icon, link, label, bg }, i) => {
           const delay = open ? i * 45 : (socialLinks.length - 1 - i) * 35;
           return (
             <li
@@ -96,9 +121,9 @@ export default function SocialFab() {
                 rel="noreferrer"
                 aria-label={label}
                 tabIndex={open ? 0 : -1}
-                className="group flex h-12 w-12 items-center justify-center rounded-full border border-white/10 bg-[#0B1F3A] text-white/90 shadow-lg shadow-black/30 outline-none transition-colors duration-200 hover:bg-[#C9A24B] hover:text-[#0B1F3A] focus-visible:ring-2 focus-visible:ring-[#E7CA82] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
+                className={`group flex h-12 w-12 items-center justify-center rounded-full text-white shadow-lg shadow-black/30 outline-none ring-1 ring-white/20 transition-transform duration-200 hover:scale-110 focus-visible:ring-2 focus-visible:ring-[#E7CA82] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent ${bg}`}
               >
-                <Icon size={18} className="transition-colors duration-200" />
+                <Icon size={19} className="drop-shadow-sm" />
               </a>
             </li>
           );
