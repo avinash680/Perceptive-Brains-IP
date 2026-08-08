@@ -4,6 +4,12 @@ function getResendApiKey() {
   return process.env.RESEND_API_KEY || "";
 }
 
+function getResendClient() {
+  const apiKey = getResendApiKey();
+  if (!apiKey) throw "No Resend API Key"
+  return new Resend(apiKey);
+}
+
 function getMailAuth() {
   const user = process.env.GMAIL_USER || process.env.SMTP_USER || process.env.EMAIL_USER;
   const pass = normalizePass(process.env.GMAIL_APP_PASSWORD || process.env.SMTP_PASS || process.env.EMAIL_PASS);
