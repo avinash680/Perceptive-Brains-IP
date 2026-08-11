@@ -135,7 +135,7 @@ const Footer = () => {
                   className="group flex items-start gap-3 text-[15px] text-white transition-colors hover:text-white"
                 >
                   <Phone className="text-[var(--brand-gold)] shrink-0 mt-0.5" size={16} />
-                  <span>+91 8559000169</span>
+                  <span>+91 81680 99183</span>
                 </a>
               </li>
               <li className="flex items-start gap-3 text-[15px] text-white">
