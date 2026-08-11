@@ -1,5 +1,7 @@
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
+const fs = require('fs');
 
 const consultationRoutes = require('./routes/consultation.route');
 
@@ -20,6 +22,23 @@ app.get('/', (req, res) => {
 });
 
 app.use('/api/consultation', consultationRoutes);
+
+// Serve frontend production build (if present) and provide SPA fallback
+try {
+  const distPath = path.join(__dirname, '..', 'frontend', 'dist');
+  if (fs.existsSync(distPath)) {
+    app.use(express.static(distPath));
+
+    // For any non-API route, return index.html so the client-side router can handle it
+    app.get('*', (req, res, next) => {
+      if (req.path.startsWith('/api')) return next();
+      res.sendFile(path.join(distPath, 'index.html'));
+    });
+  }
+} catch (e) {
+  // If something goes wrong checking/serving static files, continue without breaking the API
+  console.error('Error setting up static frontend serving:', e);
+}
 
 // ---------- 404 handler ----------
 app.use((req, res) => {
