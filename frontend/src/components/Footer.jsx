@@ -57,7 +57,7 @@ const Footer = () => {
 
       <div className="relative max-w-7xl mx-auto px-6 lg:px-8 pt-14 pb-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-x-8 gap-y-12">
-          {/* Brand */}
+          {/* Brand */} 
           <div className="lg:col-span-5">
             <Link to="/" className="inline-flex items-center gap-3">
               <img
@@ -122,11 +122,11 @@ const Footer = () => {
             <ul className="space-y-4">
               <li>
                 <a
-                  href="mailto:energymindsip@gmail.com"
+                  href="mailto:perceptivebrains@gmail.com"
                   className="group flex items-start gap-3 text-[15px] text-white transition-colors hover:text-white"
                 >
                   <Mail className="text-[var(--brand-gold)] shrink-0 mt-0.5" size={16} />
-                  <span>perceptivebrainsip@gmail.com</span>
+                  <span>perceptivebrains@gmail.com</span>
                 </a>
               </li>
               <li>
@@ -135,7 +135,7 @@ const Footer = () => {
                   className="group flex items-start gap-3 text-[15px] text-white transition-colors hover:text-white"
                 >
                   <Phone className="text-[var(--brand-gold)] shrink-0 mt-0.5" size={16} />
-                  <span>+91 81680 99183</span>
+                  <span>+91 8559000169</span>
                 </a>
               </li>
               <li className="flex items-start gap-3 text-[15px] text-white">
