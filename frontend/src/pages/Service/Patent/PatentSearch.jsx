@@ -7,6 +7,8 @@ import {
   ClipboardList, Compass, FolderSearch, FileCheck2,
 } from "lucide-react";
 
+import PageMeta from "../../../components/PageMeta";
+
 /* ------------------------------------------------------------------ */
 /*  Design tokens — lifted directly from the Perceptive Brains IP mark */
 /* ------------------------------------------------------------------ */

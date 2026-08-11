@@ -4,6 +4,7 @@ import {
   Clock3, Scale, AlertTriangle, Gavel, Globe2, XCircle, Briefcase,
   Sparkles, ArrowUp,
 } from "lucide-react";
+import PageMeta from "../../../components/PageMeta";
 
 /**
  * Design Registration in India — presented as a Gazette / Certificate of Registration.

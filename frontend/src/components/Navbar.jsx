@@ -190,11 +190,12 @@ export default function Navbar() {
               onMouseEnter={openMegaMenu}
               onMouseLeave={scheduleCloseMegaMenu}
             >
-              <button
-                onClick={() => setServicesOpen((v) => !v)}
+              <Link
+                to="/services"
                 className="group relative flex items-center gap-1.5 py-2 text-[15px] font-medium tracking-wide text-[var(--brand-text)] transition-colors hover:text-[var(--brand-gold)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-gold)] focus-visible:ring-offset-2 rounded"
                 aria-expanded={servicesOpen}
                 aria-haspopup="true"
+                onClick={() => setServicesOpen(false)}
               >
                 Services
                 <ChevronDown
@@ -208,7 +209,7 @@ export default function Navbar() {
                     servicesOpen || isActive("/services") ? "w-full" : "w-0"
                   }`}
                 />
-              </button>
+              </Link>
 
               {/* Panel: left rail of categories, right pane of items — cleaner
                   than a five-column grid, and reads at a glance. */}
@@ -355,6 +356,14 @@ export default function Navbar() {
               >
                 <div className="overflow-hidden">
                   <div className="px-6 pb-4 space-y-5 bg-[var(--brand-bg)]">
+                    <Link
+                      to="/services"
+                      onClick={() => setIsOpen(false)}
+                      className="inline-flex items-center justify-between w-full rounded-lg bg-[var(--brand-surface)] px-4 py-3 text-sm font-semibold text-[var(--brand-text)] transition-colors hover:bg-[var(--brand-gold)] hover:text-white"
+                    >
+                      View all services
+                      <ChevronRight size={16} />
+                    </Link>
                     {serviceGroups.map((group) => (
                       <div key={group.title} className="pt-4">
                         <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--brand-gold)] mb-2">
