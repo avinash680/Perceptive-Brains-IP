@@ -30,7 +30,8 @@ try {
     app.use(express.static(distPath));
 
     // For any non-API route, return index.html so the client-side router can handle it
-    app.get('*', (req, res, next) => {
+    // Use app.use() (no path param) to avoid path-to-regexp errors in some express/path-to-regexp versions
+    app.use((req, res, next) => {
       if (req.path.startsWith('/api')) return next();
       res.sendFile(path.join(distPath, 'index.html'));
     });
