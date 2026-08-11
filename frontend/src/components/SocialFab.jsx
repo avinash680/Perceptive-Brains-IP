@@ -43,7 +43,7 @@ function WhatsAppGlyph({ size = 18, className = "" }) {
 const socialLinks = [
   {
     icon: WhatsAppGlyph,
-    link: "8278816367",
+    link: "https://wa.me/918168099183",
     label: "WhatsApp",
     bg: "bg-[#25D366]",
   },

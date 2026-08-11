@@ -1,16 +1,17 @@
+const crypto = require('crypto');
+
 /**
- * Generates a human-friendly application number without needing a database.
- * Format: IP-YYMMDD-XXXX  (e.g. IP-260802-4831)
- * The date portion + a random 4-digit suffix keeps collisions practically
- * negligible for a low/medium volume contact form.
+ * Generates a display-only application/reference number.
+ * There is no database, so this is derived from the current date plus a
+ * random suffix rather than an incrementing counter. It's unique enough
+ * to show the user and reference in emails, but is NOT persisted anywhere.
+ *
+ * Format: IP-YYYYMMDD-XXXXXX (e.g. IP-20260810-4F9A2B)
  */
 function generateAppNo() {
-  const now = new Date();
-  const yy = String(now.getFullYear()).slice(-2);
-  const mm = String(now.getMonth() + 1).padStart(2, "0");
-  const dd = String(now.getDate()).padStart(2, "0");
-  const rand = Math.floor(1000 + Math.random() * 9000);
-  return `IP-${yy}${mm}${dd}-${rand}`;
+  const datePart = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+  const randPart = crypto.randomBytes(3).toString('hex').toUpperCase();
+  return `IP-${datePart}-${randPart}`;
 }
 
 module.exports = { generateAppNo };

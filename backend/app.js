@@ -1,53 +1,36 @@
-// const dotenv = require("dotenv");
-// const express = require("express");
-// const cors = require("cors");
-// const consultationRoute = require("./routes/consultation.route");
-// const config = require("./config/env");
+const express = require('express');
+const cors = require('cors');
 
-// const app = express();
+const consultationRoutes = require('./routes/consultation.route');
 
-// const defaultOrigins = [
-//   "http://localhost:5173",
-//   "http://127.0.0.1:5173",
-//   "http://localhost:3000",
-//   "http://127.0.0.1:3000",
-// ];
+const app = express();
 
-// const allowedOrigins = Array.from(
-//   new Set([
-//     ...defaultOrigins,
-//     ...(process.env.FRONTEND_ORIGIN || "")
-//       .split(",")
-//       .map((origin) => origin.trim())
-//       .filter(Boolean),
-//   ])
-// );
+// ---------- Middleware ----------
+app.use(cors({ origin: process.env.CLIENT_ORIGIN || '*' }));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-// function isAllowedOrigin(origin) {
-//   if (!origin) return true;
-//   return allowedOrigins.includes(origin) || /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin);
-// }
+// NOTE: No rate limiter / submission cap is applied here on purpose,
+// per the requirement to accept submissions "without any limit".
+// If you later want abuse protection, add express-rate-limit here.
 
-// app.use(cors({
-//   origin: function (origin, callback) {
-//     if (isAllowedOrigin(origin)) {
-//       return callback(null, true);
-//     }
+// ---------- Routes ----------
+app.get('/', (req, res) => {
+  res.json({ status: 'ok', message: 'Consultation backend is running.' });
+});
 
-//     return callback(new Error(`Origin ${origin} not allowed by CORS`));
-//   },
-//   credentials: true,
-//   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-//   allowedHeaders: ["Content-Type", "Authorization"],
-// }));
-// app.use(express.json());
-// app.use(express.urlencoded({ extended: true }));
+app.use('/api/consultation', consultationRoutes);
 
-// app.get('/', (req, res) => {
-//   res.send("hello");
-// });
+// ---------- 404 handler ----------
+app.use((req, res) => {
+  res.status(404).json({ success: false, error: 'Route not found.' });
+});
 
-// app.use('/consultation', consultationRoute);
+// ---------- Central error handler (catches anything thrown outside controllers) ----------
+// eslint-disable-next-line no-unused-vars
+app.use((err, req, res, next) => {
+  console.error('Unhandled error:', err);
+  res.status(500).json({ success: false, error: 'Internal server error.' });
+});
 
-
-// module.exports = app;
+module.exports = app;
