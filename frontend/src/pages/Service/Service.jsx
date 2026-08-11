@@ -8,6 +8,7 @@ import {
   Lightbulb,
   PenTool,
 } from "lucide-react";
+import PageMeta from "../../components/PageMeta";
 
 const services = [
   {
@@ -56,8 +57,13 @@ const services = [
 
 const Service = () => {
   return (
-    <section className="bg-[#F6F3EA] py-20">
-      <div className="max-w-7xl mx-auto px-6">
+    <>
+      <PageMeta
+        title="Perceptive Brains | Intellectual Property Services in India"
+        description="Explore patent filing, trademark registration, copyright protection, design registration, and IP consulting services from Perceptive Brains IP."
+      />
+      <section className="bg-[#F6F3EA] py-20">
+        <div className="max-w-7xl mx-auto px-6">
         <div className="mb-12 text-center">
           <p className="text-sm uppercase tracking-[4px] text-[#9C7423] font-semibold mb-4">
             Our Services
@@ -100,6 +106,7 @@ const Service = () => {
         </div>
       </div>
     </section>
+    </>
   );
 };
 

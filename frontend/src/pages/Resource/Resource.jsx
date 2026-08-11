@@ -1,4 +1,5 @@
 import React from "react";
+import PageMeta from "../../components/PageMeta";
 import { ArrowRight } from "lucide-react";
 import DownloadForm from "../../assets/DownloadForm.png";
 import PatentTimeline from "../../assets/patent-timeline-1536x1024.jpg";
@@ -75,8 +76,13 @@ const resources = [
 
 const Resources = () => {
   return (
-    <section className="bg-white py-24">
-      <div className="max-w-7xl mx-auto px-6">
+    <>
+      <PageMeta
+        title="IP Resource Center | Perceptive Brains"
+        description="Download IP guides, checklists, timelines, case studies, and educational resources to simplify your intellectual property journey."
+      />
+      <section className="bg-white py-24">
+        <div className="max-w-7xl mx-auto px-6">
         {/* Heading */}
         <div className="text-center max-w-3xl mx-auto mb-16">
           <span className="uppercase tracking-[4px] text-amber-600 font-semibold">
@@ -153,6 +159,7 @@ const Resources = () => {
         </div>
       </div>
     </section>
+    </>
   );
 };
 

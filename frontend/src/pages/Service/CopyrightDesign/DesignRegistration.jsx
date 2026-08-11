@@ -361,6 +361,10 @@ export default function DesignRegistration() {
   return (
     <div className="dr-font-body min-h-screen w-full bg-[#F7F8FA] text-[#22201B]">
       <GlobalStyle />
+      <PageMeta
+        title="Design Registration Services in India | Perceptive Brains"
+        description="Design registration services to safeguard product appearance, visual identity, and industrial designs."
+      />
 
       {/* HERO */}
       <header className="relative overflow-hidden bg-gradient-to-b from-[#061B3D] via-[#082E63] to-[#0A2554] border-b border-[#C69A32]/30 px-6 pt-16 pb-14">

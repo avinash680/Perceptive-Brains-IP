@@ -6,10 +6,16 @@ import WhyChoose from './WhyChoose'
 import Process from './Process'
 import Ourteam from './OurTeam'
 import Testimonials from './Testimonial'
+import PageMeta from '../../components/PageMeta'
+
 const Home = () => {
   return (
      <>
-     <HeroSection />
+      <PageMeta
+        title="Perceptive Brains | Patent, Trademark & IP Services in India"
+        description="Perceptive Brains provides patent registration, trademark registration, copyright, design registration, IP consulting and web services for businesses and innovators in India."
+      />
+      <HeroSection />
       <StatsSection />
       <OurPracticeAreas />
       <WhyChoose />

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
+import PageMeta from "../../../components/PageMeta";
 import {
   BookOpen, Music2, Code2, ShieldCheck, Scale, FileCheck2,
   Clock3, Landmark, Fingerprint, Tag, CircleCheck, Sparkles,
@@ -114,6 +115,10 @@ export default function CopyrightRegistration() {
   return (
     <div className="cr-font-body min-h-screen w-full bg-[#061B3D]">
       <GlobalStyle />
+      <PageMeta
+        title="Copyright Registration Services in India | Perceptive Brains"
+        description="Copyright registration services to protect software, creative works, and artistic content under Indian law."
+      />
 
       {/* HERO */}
       <section className="relative overflow-hidden bg-gradient-to-b from-[#061B3D] via-[#082E63] to-[#0A2554] pt-24 pb-24 px-6">

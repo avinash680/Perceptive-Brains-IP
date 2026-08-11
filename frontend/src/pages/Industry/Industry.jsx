@@ -1,4 +1,5 @@
 import React from "react";
+import PageMeta from "../../components/PageMeta";
 import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import aiImg from "../../assets/AI.jpg";
@@ -88,8 +89,13 @@ const industries = [
 
 const Industries = () => {
   return (
-    <section className="bg-white py-24">
-      <div className="max-w-7xl mx-auto px-6">
+    <>
+      <PageMeta
+        title="Industry IP Solutions | Perceptive Brains"
+        description="Industry-specific intellectual property strategies for AI, biotech, pharma, electronics, renewable energy and manufacturing."
+      />
+      <section className="bg-white py-24">
+        <div className="max-w-7xl mx-auto px-6">
         {/* Heading */}
         <div className="max-w-3xl mx-auto text-center mb-16">
           <span className="inline-block text-amber-600 font-semibold uppercase tracking-[3px]">
@@ -149,6 +155,7 @@ const Industries = () => {
         </div>
       </div>
     </section>
+    </>
   );
 };
 

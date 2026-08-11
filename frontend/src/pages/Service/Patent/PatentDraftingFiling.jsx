@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
+import PageMeta from "../../../components/PageMeta";
 import { Stamp, ScrollText, Scale, FileSearch, Gavel, BookMarked, ChevronRight, CircleCheck, CircleAlert, Handshake } from "lucide-react";
 import IPFeeTable from "./patentFees";
 
@@ -244,6 +245,10 @@ export default function PatentDraftingPerceptiveBrains() {
   return (
     <div className="pl-root min-h-screen w-full">
       <style>{FONT_STYLE}</style>
+      <PageMeta
+        title="Patent Drafting & Filing Services | Perceptive Brains"
+        description="Expert patent drafting and filing services for India and international protection from Perceptive Brains IP."
+      />
 
       <svg className="pl-grain" width="0" height="0">
         <filter id="pl-noise">

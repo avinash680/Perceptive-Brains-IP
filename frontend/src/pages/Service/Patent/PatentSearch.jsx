@@ -288,6 +288,10 @@ export default function PatentSearchServicesLuxury() {
   return (
     <div className="pl-root w-full min-h-screen">
       <style>{FONT_STYLE}</style>
+      <PageMeta
+        title="Patent Search Services in India | Perceptive Brains"
+        description="Professional patent search services in India to assess novelty, map prior art, and support strong patent filings."
+      />
 
       {/* ---------------------------------------------------------- */}
       {/* HERO                                                        */}

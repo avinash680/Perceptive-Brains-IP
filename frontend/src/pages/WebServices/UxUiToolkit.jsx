@@ -1,3 +1,4 @@
+import PageMeta from "../../components/PageMeta";
 import { useRef, useCallback } from "react";
 import {
   Search,
@@ -64,7 +65,12 @@ function TiltCard({ children }) {
 
 export default function UxUiToolkit() {
   return (
-    <div className="w-full bg-white text-slate-900 font-sans antialiased">
+    <>
+      <PageMeta
+        title="UI/UX Design Services | Perceptive Brains"
+        description="UX and UI design services to build accessible, high-converting digital products that support IP businesses."
+      />
+      <div className="w-full bg-white text-slate-900 font-sans antialiased">
       <div className="mx-auto max-w-6xl px-6 py-16">
         <p className="mb-5 font-mono text-xs tracking-[0.25em] text-[#B45309]">UI/UX TOOLKIT</p>
         <h1 className="max-w-2xl font-mono text-3xl leading-tight tracking-tight sm:text-4xl">
@@ -150,5 +156,6 @@ export default function UxUiToolkit() {
         </div>
       </section>
     </div>
+    </>
   );
 }

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import PageMeta from "../../../components/PageMeta";
 import {
   Search,
   Globe2,
@@ -173,6 +174,10 @@ export default function TrademarkRegistration() {
   return (
     <div style={{ fontFamily: "'Inter', sans-serif", background: C.paper, color: C.ink }}>
       <style>{FONTS}</style>
+      <PageMeta
+        title="Trademark Registration Services in India | Perceptive Brains"
+        description="Trademark registration services, clearance search, and brand protection support for businesses and startups."
+      />
 
       {/* HERO */}
       <section

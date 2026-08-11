@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import PageMeta from "../../components/PageMeta";
 import {
   getConsultationErrorMessage,
   getConsultationUrl,
@@ -126,7 +127,12 @@ export default function ConsultationCompact() {
   };
 
   return (
-    <div className="ip-root h-full w-full">
+    <>
+      <PageMeta
+        title="Contact Perceptive Brains | Expert IP Guidance"
+        description="Get in touch for patent filing, trademark registration, copyright protection, design registration, and IP consulting services in India."
+      />
+      <div className="ip-root h-full w-full">
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
         .ip-root { font-family: 'Inter', system-ui, sans-serif; }
@@ -366,5 +372,6 @@ export default function ConsultationCompact() {
         </div>
       </section>
     </div>
+    </>
   );
 }

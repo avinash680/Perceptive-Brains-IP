@@ -1,4 +1,5 @@
 import React from "react";
+import PageMeta from "../../components/PageMeta";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
@@ -81,13 +82,18 @@ const itemVariants = {
 
 export default function WebServices() {
   return (
-    <section
-      className="relative w-full overflow-hidden py-24 px-6 sm:px-10 lg:px-16"
-      style={{
-        background:
-          "radial-gradient(120% 120% at 15% 0%, #0B3A7A 0%, #082E63 45%, #061F45 100%)",
-      }}
-    >
+    <>
+      <PageMeta
+        title="Web Development Services | Perceptive Brains"
+        description="Custom web development and digital experience services for IP firms and innovation-driven businesses."
+      />
+      <section
+        className="relative w-full overflow-hidden py-24 px-6 sm:px-10 lg:px-16"
+        style={{
+          background:
+            "radial-gradient(120% 120% at 15% 0%, #0B3A7A 0%, #082E63 45%, #061F45 100%)",
+        }}
+      >
       {/* Ambient gold glow accents */}
       <div
         className="pointer-events-none absolute -top-40 -right-32 h-96 w-96 rounded-full opacity-20 blur-3xl"
@@ -238,5 +244,6 @@ export default function WebServices() {
         </motion.div>
       </div>
     </section>
+    </>
   );
 }
