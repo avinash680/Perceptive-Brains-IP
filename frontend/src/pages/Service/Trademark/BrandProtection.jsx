@@ -429,7 +429,7 @@ export default function BrandProtection() {
               </p>
               <div className="mt-8 flex flex-wrap gap-4">
                 <a
-                  href="mailto:info@perceptivebrainsip.com"
+                  href="mailto:info@perceptivebrains.com"
                   className="bp-btn-gold inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-semibold"
                   style={{ background: "linear-gradient(135deg, var(--gold-light), var(--gold))", color: "var(--navy)" }}
                 >

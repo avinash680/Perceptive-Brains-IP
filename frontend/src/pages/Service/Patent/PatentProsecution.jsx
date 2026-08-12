@@ -402,7 +402,7 @@ export default function PatentProsecution() {
                   <Phone size={16} /> Schedule Consultation
                 </a>
                 <a
-                  href="mailto:info@perceptivebrainsip.com"
+                  href="mailto:info@perceptivebrains.com"
                   className="pp-btn-ghost inline-flex items-center gap-2 px-6 py-3.5 rounded-full font-medium text-sm border"
                   style={{ borderColor: "rgba(255,255,255,0.35)", color: "#FFFFFF" }}
                 >
