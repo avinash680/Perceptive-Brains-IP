@@ -180,11 +180,11 @@ export default function Hero() {
           {/* Left column */}
           <div>
             <p className="mb-5 text-xs uppercase tracking-[4px] text-[#d6a52a]">
-              Premier IP legal services · India &amp; global
+             Perceptive Brains | Intellectual Property & Innovation
             </p>
 
              <h1 className="font-serif text-4xl font-light leading-[1.1] text-white sm:text-5xl lg:text-[3.25rem]">
-              Perceptive Brains IP Protecting innovation with precision,{" "}
+              Perceptive Brains  Protecting innovation with precision,{" "}
               <span className="italic text-[#d6a52a]">strategy,<br />legal </span>{" "}
               &amp; excellence.
             </h1>
