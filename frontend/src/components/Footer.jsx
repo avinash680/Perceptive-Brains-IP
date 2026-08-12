@@ -71,7 +71,7 @@ const Footer = () => {
             </Link>
 
             <p className="text-white leading-relaxed text-[15px] max-w-sm mt-5">
-             Delivering trusted Intellectual Property solutions in patents, trademarks, designs, copyrights, and IP strategy to empower innovators and businesses.
+              Perceptive Brains is a trusted intellectual property law firm. Delivering trusted Intellectual Property solutions in patents, trademarks, designs, copyrights, and IP strategy to empower innovators and businesses.
             </p>
 
             <div className="flex gap-2.5 mt-7">

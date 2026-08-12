@@ -183,19 +183,21 @@ export default function Hero() {
               Premier IP legal services · India &amp; global
             </p>
 
-            <h1 className="font-serif text-3.5rem font-light leading-[1.08] text-white sm:text-5xl lg:text-[3.25rem]">
-              Intellectual Property & Digital Solutions for Businesses
+             <h1 className="font-serif text-4xl font-light leading-[1.1] text-white sm:text-5xl lg:text-[3.25rem]">
+              Perceptive Brains IP Protecting innovation with precision,{" "}
+              <span className="italic text-[#d6a52a]">strategy,<br />legal </span>{" "}
+              &amp; excellence.
             </h1>
-
+            
             <p className="mt-5 max-w-xl text-sm leading-relaxed text-gray-400">
-              Perceptive Brains provides patent registration, trademark registration, copyright registration, design registration, IP consulting and web services for businesses and innovators in India.
+              Perceptive Brains IP is a trusted intellectual property law firm. Delivering trusted Intellectual Property solutions in patents, trademarks, designs, copyrights, and IP strategy to empower innovators and businesses.
             </p>
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
               <Link
                 to="/contact"
                 className="group inline-flex items-center justify-center gap-2 rounded-full bg-[#d6a52a] px-6 py-3 text-sm font-semibold text-black transition-all duration-200 hover:-translate-y-0.5 hover:bg-yellow-500 hover:shadow-[0_14px_30px_-10px_rgba(214,165,42,0.6)]"
-              >
+              > 
                 Book free consultation
                 <ArrowRight size={16} className="transition-transform duration-200 group-hover:translate-x-0.5" />
               </Link>
