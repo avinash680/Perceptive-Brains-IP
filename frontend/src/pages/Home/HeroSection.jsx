@@ -179,23 +179,18 @@ export default function Hero() {
         <div className="grid gap-10 lg:grid-cols-[1.08fr_0.92fr] lg:items-center lg:gap-10">
           {/* Left column */}
           <div>
-            <p className="mb-2 text-base font-semibold tracking-[0.08em] text-[#d6a52a]">
-              Perceptive Brains
+            <p className="mb-5 text-xs uppercase tracking-[4px] text-[#d6a52a]">
+             Perceptive Brains | Intellectual Property & Innovation
             </p>
-            <a
-              href="https://perceptivebrains.com"
-              className="mb-5 inline-flex text-lg font-medium text-[#7dc6ff] transition-opacity hover:opacity-80"
-            >
-              perceptivebrains.com
-            </a>
 
-            <h1 className="font-serif text-4xl font-light leading-[1.1] text-white sm:text-5xl lg:text-[3.25rem]">
-              Intellectual Property,
-              <span className="block text-[#d6a52a]">Technology &amp; Innovation</span>
+             <h1 className="font-serif text-4xl font-light leading-[1.1] text-white sm:text-5xl lg:text-[3.25rem]">
+              Perceptive Brains  Protecting innovation with precision,{" "}
+              <span className="italic text-[#d6a52a]">strategy,<br />legal </span>{" "}
+              &amp; excellence.
             </h1>
-
+            
             <p className="mt-5 max-w-xl text-sm leading-relaxed text-gray-400">
-              Perceptive Brains helps founders, startups, and businesses protect patents, trademarks, copyrights, design rights, and valuable ideas through strategic intellectual property guidance.
+              Perceptive Brains IP is a trusted intellectual property law firm. Delivering trusted Intellectual Property solutions in patents, trademarks, designs, copyrights, and IP strategy to empower innovators and businesses.
             </p>
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
