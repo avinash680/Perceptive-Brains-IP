@@ -12,8 +12,8 @@ const Home = () => {
   return (
      <>
       <PageMeta
-        title="Perceptive Brains | Patent, Trademark & IP Services in India"
-        description="Perceptive Brains provides patent registration, trademark registration, copyright, design registration, IP consulting and web services for businesses and innovators in India."
+        title="Perceptive Brains | Intellectual Property, Technology & Innovation"
+        description="Perceptive Brains helps businesses and innovators protect patents, trademarks, copyrights, design rights, and technology-driven ideas with expert IP strategy."
       />
       <HeroSection />
       <StatsSection />

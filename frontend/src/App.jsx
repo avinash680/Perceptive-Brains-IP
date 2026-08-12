@@ -6,9 +6,9 @@ import "./App.css";
 
 const PAGE_META = {
   "/": {
-    title: "Perceptive Brains | Patent, Trademark & IP Services in India",
+    title: "Perceptive Brains | Intellectual Property, Technology & Innovation",
     description:
-      "Perceptive Brains provides patent registration, trademark registration, copyright, design registration, IP consulting and web services for businesses and innovators in India.",
+      "Perceptive Brains helps startups, founders, and businesses protect patents, trademarks, copyrights, designs, and innovation with expert intellectual property strategy.",
   },
   "/about": {
     title: "About Perceptive Brains IP | IP Services and Strategy in India",
@@ -121,9 +121,9 @@ const PAGE_META = {
       "UX and UI design services to build accessible, high-converting digital products that support IP businesses.",
   },
   default: {
-    title: "Perceptive Brains | Intellectual Property Services in India",
+    title: "Perceptive Brains | Intellectual Property, Technology & Innovation",
     description:
-      "Perceptive Brains offers patent, trademark, copyright, design registration, IP strategy and digital services for innovators in India.",
+      "Perceptive Brains delivers intellectual property, technology, and innovation support for patents, trademarks, copyrights, designs, and strategic brand protection.",
   },
 };
 
