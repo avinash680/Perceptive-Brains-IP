@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import {
   getConsultationErrorMessage,
@@ -86,6 +86,7 @@ function Field({ icon: Icon, label, type, placeholder, value, onChange }) {
 export default function Hero() {
   useConsultationWarmup();
   const [form, setForm] = useState(initialForm);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (!heroImage) return;
@@ -98,6 +99,7 @@ export default function Hero() {
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [loadingText, setLoadingText] = useState("Submitting...");
+  const [feesLoading, setFeesLoading] = useState(false);
 
   const update = (key) => (e) => {
     setForm((f) => ({ ...f, [key]: e.target.value }));
@@ -119,7 +121,9 @@ export default function Hero() {
     setLoadingText("Submitting...");
 
     const timer = setTimeout(() => {
-      setLoadingText("Submitting... (Warming up backend server, please wait...)");
+      setLoadingText(
+        "Submitting... (Warming up backend server, please wait...)",
+      );
     }, 3000);
 
     let url = null;
@@ -151,7 +155,10 @@ export default function Hero() {
   };
 
   return (
-    <section className="relative min-h-[78vh] overflow-hidden bg-cover bg-center sm:min-h-[82vh]" style={heroStyle}>
+    <section
+      className="relative min-h-[78vh] overflow-hidden bg-cover bg-center sm:min-h-[82vh]"
+      style={heroStyle}
+    >
       {/* Blueprint grid — faint, technical texture instead of flat overlay */}
       <div
         aria-hidden="true"
@@ -180,26 +187,36 @@ export default function Hero() {
           {/* Left column */}
           <div>
             <p className="mb-5 text-xs uppercase tracking-[4px] text-[#d6a52a]">
-             Perceptive Brains | Intellectual Property & Innovation
+              Perceptive Brains | Intellectual Property & Innovation
             </p>
 
-             <h1 className="font-serif text-4xl font-light leading-[1.1] text-white sm:text-5xl lg:text-[3.25rem]">
-              Perceptive Brains  Protecting innovation with precision,{" "}
-              <span className="italic text-[#d6a52a]">strategy,<br />legal </span>{" "}
+            <h1 className="font-serif text-4xl font-light leading-[1.1] text-white sm:text-5xl lg:text-[3.25rem]">
+              Perceptive Brains Protecting innovation with precision,{" "}
+              <span className="italic text-[#d6a52a]">
+                strategy,
+                <br />
+                legal{" "}
+              </span>{" "}
               &amp; excellence.
             </h1>
-            
+
             <p className="mt-5 max-w-xl text-sm leading-relaxed text-gray-400">
-              Perceptive Brains IP is a trusted intellectual property law firm. Delivering trusted Intellectual Property solutions in patents, trademarks, designs, copyrights, and IP strategy to empower innovators and businesses.
+              Perceptive Brains IP is a trusted intellectual property law firm.
+              Delivering trusted Intellectual Property solutions in patents,
+              trademarks, designs, copyrights, and IP strategy to empower
+              innovators and businesses.
             </p>
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
               <Link
                 to="/contact"
                 className="group inline-flex items-center justify-center gap-2 rounded-full bg-[#d6a52a] px-6 py-3 text-sm font-semibold text-black transition-all duration-200 hover:-translate-y-0.5 hover:bg-yellow-500 hover:shadow-[0_14px_30px_-10px_rgba(214,165,42,0.6)]"
-              > 
+              >
                 Book free consultation
-                <ArrowRight size={16} className="transition-transform duration-200 group-hover:translate-x-0.5" />
+                <ArrowRight
+                  size={16}
+                  className="transition-transform duration-200 group-hover:translate-x-0.5"
+                />
               </Link>
               <Link
                 to="/services"
@@ -207,18 +224,40 @@ export default function Hero() {
               >
                 Explore services
               </Link>
-              <Link
-                to="/services/patent-drafting-filing#fees"
-                className="inline-flex items-center justify-center rounded-full border border-gray-600 px-6 py-3 text-sm font-medium text-white transition-colors duration-200 hover:border-white hover:bg-white hover:text-black"
+              <button
+                type="button"
+                onClick={() => {
+                  if (feesLoading) return;
+                  setFeesLoading(true);
+                  setTimeout(() => {
+                    navigate("/services/patent-drafting-filing#fees");
+                  }, 600);
+                }}
+                disabled={feesLoading}
+                className="inline-flex items-center justify-center rounded-full border border-gray-600 px-6 py-3 text-sm font-medium text-white transition-colors duration-200 hover:border-white hover:bg-white hover:text-black disabled:opacity-80 disabled:cursor-not-allowed"
               >
-                Fees Schedule
-              </Link>
+                {feesLoading ? (
+                  <>
+                    <Loader2 size={14} className="mr-2 spin" />
+                    One moment...
+                  </>
+                ) : (
+                  "Fees Schedule"
+                )}
+              </button>
             </div>
 
             <div className="mt-10 flex flex-wrap gap-x-6 gap-y-3 border-t border-white/10 pt-6">
               {TRUST_MARKERS.map(({ icon: Icon, label }) => (
-                <span key={label} className="flex items-center gap-2 text-xs uppercase tracking-wide text-gray-400">
-                  <Icon size={14} className="text-[#d6a52a]" strokeWidth={1.75} />
+                <span
+                  key={label}
+                  className="flex items-center gap-2 text-xs uppercase tracking-wide text-gray-400"
+                >
+                  <Icon
+                    size={14}
+                    className="text-[#d6a52a]"
+                    strokeWidth={1.75}
+                  />
                   {label}
                 </span>
               ))}
@@ -236,8 +275,21 @@ export default function Hero() {
                       d="M 50, 50 m -38, 0 a 38,38 0 1,1 76,0 a 38,38 0 1,1 -76,0"
                     />
                   </defs>
-                  <circle cx="50" cy="50" r="48" fill="none" stroke="#B45309" strokeOpacity="0.35" strokeWidth="1" />
-                  <text fill="#D97706" fontSize="8" letterSpacing="2" className="ip-mono">
+                  <circle
+                    cx="50"
+                    cy="50"
+                    r="48"
+                    fill="none"
+                    stroke="#B45309"
+                    strokeOpacity="0.35"
+                    strokeWidth="1"
+                  />
+                  <text
+                    fill="#D97706"
+                    fontSize="8"
+                    letterSpacing="2"
+                    className="ip-mono"
+                  >
                     <textPath href="#sealCirclePath2">
                       &#183; PROTECTED &#183; REGISTERED &#183; SECURED
                     </textPath>
@@ -280,8 +332,13 @@ export default function Hero() {
 
                     {errorMsg && (
                       <div className="fade-in mb-3 flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2.5">
-                        <AlertTriangle size={14} className="mt-0.5 shrink-0 text-red-500" />
-                        <p className="text-[12.5px] leading-snug text-red-700">{errorMsg}</p>
+                        <AlertTriangle
+                          size={14}
+                          className="mt-0.5 shrink-0 text-red-500"
+                        />
+                        <p className="text-[12.5px] leading-snug text-red-700">
+                          {errorMsg}
+                        </p>
                       </div>
                     )}
 

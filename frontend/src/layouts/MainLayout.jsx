@@ -5,7 +5,7 @@ import SocialFab from "../components/SocialFab";
 
 export default function MainLayout() {
   return (
-    <main className="w-full overflow-x-hidden">
+    <main className="w-full overflow-x-clip">
       <Navbar />
       <Outlet />
       <SocialFab />
