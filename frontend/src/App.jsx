@@ -1,7 +1,8 @@
-import { useLayoutEffect } from "react";
+import { useEffect, useLayoutEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import AppRoutes from "./routes/AppRoutes";
 import SEO from "./components/SEO";
+import LoadingSpinner from "./components/LoadSpinner";
 import "./App.css";
 
 const PAGE_META = {
@@ -153,12 +154,19 @@ function ScrollToHash() {
 
 function App() {
   const { pathname } = useLocation();
+  const [initialLoading, setInitialLoading] = useState(true);
   const cleanPath = pathname !== "/" && pathname.endsWith("/") ? pathname.slice(0, -1) : pathname;
   const pageMeta = PAGE_META[cleanPath] || PAGE_META.default;
   const canonical = typeof window !== "undefined" ? window.location.origin + cleanPath : "";
 
+  useEffect(() => {
+    const timer = window.setTimeout(() => setInitialLoading(false), 900);
+    return () => window.clearTimeout(timer);
+  }, []);
+
   return (
     <>
+      {initialLoading && <LoadingSpinner fullScreen label="Loading" />}
       <SEO
         title={pageMeta.title}
         description={pageMeta.description}

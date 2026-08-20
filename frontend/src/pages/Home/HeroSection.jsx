@@ -6,6 +6,7 @@ import {
   submitConsultation,
 } from "../../api/consultation";
 import { useConsultationWarmup } from "../../hooks/useConsultationWarmup";
+import LoadingSpinner from "../../components/LoadSpinner";
 import {
   ArrowRight,
   ScrollText,
@@ -159,6 +160,13 @@ export default function Hero() {
       className="relative min-h-[78vh] overflow-hidden bg-cover bg-center sm:min-h-[82vh]"
       style={heroStyle}
     >
+      {(loading || feesLoading) && (
+        <LoadingSpinner
+          fullScreen
+          label={feesLoading ? "Opening fees schedule" : loadingText}
+        />
+      )}
+
       {/* Blueprint grid — faint, technical texture instead of flat overlay */}
       <div
         aria-hidden="true"

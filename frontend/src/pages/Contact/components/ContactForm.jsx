@@ -5,6 +5,7 @@ import {
   submitConsultation,
 } from "../../../api/consultation";
 import { useConsultationWarmup } from "../../../hooks/useConsultationWarmup";
+import LoadingSpinner from "../../../components/LoadSpinner";
 import {
   User,
   Mail,
@@ -16,16 +17,19 @@ import {
   Lock,
   AlertTriangle,
   Loader2,
-    Stamp,
+  Stamp,
 } from "lucide-react";
-
-
 
 const Field = ({ icon: Icon, label, ...props }) => (
   <label className="block">
-    <span className="ip-mono mb-1 block text-[9.5px] tracking-[0.13em] text-stone-500">{label}</span>
+    <span className="ip-mono mb-1 block text-[9.5px] tracking-[0.13em] text-stone-500">
+      {label}
+    </span>
     <div className="group flex items-center gap-2.5 rounded-lg border border-stone-200 bg-white px-3 py-2.5 transition-all duration-150 focus-within:border-amber-500 focus-within:ring-4 focus-within:ring-amber-500/10 hover:border-stone-300">
-      <Icon size={14} className="shrink-0 text-stone-400 transition-colors group-focus-within:text-amber-600" />
+      <Icon
+        size={14}
+        className="shrink-0 text-stone-400 transition-colors group-focus-within:text-amber-600"
+      />
       <input
         {...props}
         className="w-full bg-transparent text-[13px] text-stone-800 placeholder-stone-400 focus:outline-none"
@@ -79,7 +83,9 @@ export default function ContactForm({ serviceOptions }) {
     setLoadingText("Submitting...");
 
     const timer = setTimeout(() => {
-      setLoadingText("Submitting... (Warming up backend server, please wait...)");
+      setLoadingText(
+        "Submitting... (Warming up backend server, please wait...)",
+      );
     }, 3000);
 
     let url = null;
@@ -91,12 +97,19 @@ export default function ContactForm({ serviceOptions }) {
 
       if (data.success) {
         setShowSuccess(true);
-        setMessage(`Application submitted successfully. Your App No: ${data.appNo}`);
+        setMessage(
+          `Application submitted successfully. Your App No: ${data.appNo}`,
+        );
         setAppNo(data.appNo || "PENDING");
         setSubmitted(true);
         setForm(initialForm);
       } else {
-        setErrorMsg(getConsultationErrorMessage(new Error(data.error || "Submission failed."), url));
+        setErrorMsg(
+          getConsultationErrorMessage(
+            new Error(data.error || "Submission failed."),
+            url,
+          ),
+        );
         setSubmitted(false);
       }
     } catch (err) {
@@ -111,20 +124,38 @@ export default function ContactForm({ serviceOptions }) {
 
   return (
     <div className="relative">
+      {loading && <LoadingSpinner fullScreen label={loadingText} />}
+
       <div className="absolute -right-3 -top-7 z-20 hidden h-[4.5rem] w-[4.5rem] items-center justify-center sm:flex">
         <svg viewBox="0 0 100 100" className="seal-ring h-full w-full">
           <defs>
-            <path id="sealCirclePath2" d="M 50, 50 m -38, 0 a 38,38 0 1,1 76,0 a 38,38 0 1,1 -76,0" />
+            <path
+              id="sealCirclePath2"
+              d="M 50, 50 m -38, 0 a 38,38 0 1,1 76,0 a 38,38 0 1,1 -76,0"
+            />
           </defs>
-          <circle cx="50" cy="50" r="48" fill="none" stroke="#B45309" strokeOpacity="0.35" strokeWidth="1" />
-          <text fill="#D97706" fontSize="8" letterSpacing="2" className="ip-mono">
+          <circle
+            cx="50"
+            cy="50"
+            r="48"
+            fill="none"
+            stroke="#B45309"
+            strokeOpacity="0.35"
+            strokeWidth="1"
+          />
+          <text
+            fill="#D97706"
+            fontSize="8"
+            letterSpacing="2"
+            className="ip-mono"
+          >
             <textPath href="#sealCirclePath2">
-                  PROTECTED • REGISTERED • SECURED
+              PROTECTED • REGISTERED • SECURED
             </textPath>
           </text>
         </svg>
         <div className="absolute flex h-9 w-9 items-center justify-center rounded-full bg-amber-600 shadow-lg">
-              <Stamp size={15} className="text-slate-950" />
+          <Stamp size={15} className="text-slate-950" />
         </div>
       </div>
 
@@ -134,15 +165,20 @@ export default function ContactForm({ serviceOptions }) {
             <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-amber-600">
               <Check size={22} className="text-slate-950" />
             </div>
-            <p className="ip-mono mb-2 text-[9.5px] tracking-widest text-amber-700">APPLICATION NO. {appNo}</p>
-            <h3 className="ip-serif mb-2 text-xl font-semibold text-stone-900">Application received</h3>
+            <p className="ip-mono mb-2 text-[9.5px] tracking-widest text-amber-700">
+              APPLICATION NO. {appNo}
+            </p>
+            <h3 className="ip-serif mb-2 text-xl font-semibold text-stone-900">
+              Application received
+            </h3>
             {showSuccess && message && (
               <p className="mx-auto mb-3 max-w-xs text-[13px] leading-5 text-emerald-700">
                 {message}
               </p>
             )}
             <p className="mx-auto max-w-xs text-[13px] leading-5 text-stone-500">
-              A registered attorney will review your details and reach out within 24 hours.
+              A registered attorney will review your details and reach out
+              within 24 hours.
             </p>
           </div>
         ) : (
@@ -160,8 +196,13 @@ export default function ContactForm({ serviceOptions }) {
 
             {errorMsg && (
               <div className="fade-in mb-3 flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2.5">
-                <AlertTriangle size={14} className="mt-0.5 shrink-0 text-red-500" />
-                <p className="text-[12.5px] leading-snug text-red-700">{errorMsg}</p>
+                <AlertTriangle
+                  size={14}
+                  className="mt-0.5 shrink-0 text-red-500"
+                />
+                <p className="text-[12.5px] leading-snug text-red-700">
+                  {errorMsg}
+                </p>
               </div>
             )}
 
@@ -198,7 +239,9 @@ export default function ContactForm({ serviceOptions }) {
               />
 
               <label className="block">
-                <span className="ip-mono mb-1 block text-[9.5px] tracking-[0.13em] text-stone-500">SERVICE OF INTEREST</span>
+                <span className="ip-mono mb-1 block text-[9.5px] tracking-[0.13em] text-stone-500">
+                  SERVICE OF INTEREST
+                </span>
                 <div className="relative rounded-lg border border-stone-200 bg-white px-3 py-2.5 transition-all duration-150 focus-within:border-amber-500 focus-within:ring-4 focus-within:ring-amber-500/10 hover:border-stone-300">
                   <select
                     value={form.service}
@@ -221,7 +264,9 @@ export default function ContactForm({ serviceOptions }) {
               </label>
 
               <label className="block">
-                <span className="ip-mono mb-1 block text-[9.5px] tracking-[0.13em] text-stone-500">PROJECT DETAILS</span>
+                <span className="ip-mono mb-1 block text-[9.5px] tracking-[0.13em] text-stone-500">
+                  PROJECT DETAILS
+                </span>
                 <div className="group flex items-start gap-2.5 rounded-lg border border-stone-200 bg-white px-3 py-2.5 transition-all duration-150 focus-within:border-amber-500 focus-within:ring-4 focus-within:ring-amber-500/10 hover:border-stone-300">
                   <MessageSquare
                     size={14}
@@ -259,12 +304,12 @@ export default function ContactForm({ serviceOptions }) {
             </button>
 
             <p className="ip-mono mt-3 flex items-center justify-center gap-1.5 text-[9px] tracking-widest text-stone-400">
-                <Lock size={10} />
-                CONFIDENTIAL • ATTORNEY-CLIENT PRIVILEGE
+              <Lock size={10} />
+              CONFIDENTIAL • ATTORNEY-CLIENT PRIVILEGE
             </p>
           </>
         )}
       </div>
     </div>
-  )
+  );
 }
