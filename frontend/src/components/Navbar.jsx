@@ -78,7 +78,7 @@ const navLinks = [
   { name: "About us", path: "/about" },
   { name: "Services", path: "/services" },
   { name: "Industries", path: "/industry" },
-  { name: "Blogs", path: "/resource" },
+  { name: "Blogs", path: "/blogs" },
   { name: "Contact", path: "/contact" },
 ];
 
