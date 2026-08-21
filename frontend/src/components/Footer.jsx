@@ -29,7 +29,7 @@ const serviceLinks = [
 ];
 
 const socialLinks = [
-  { icon: FaWhatsapp, link: "https://wa.me/918168099183", label: "WhatsApp" },
+  { icon: FaWhatsapp, link: "https://wa.me/918559000169", label: "WhatsApp" },
   { icon: FaLinkedinIn, link: "https://linkedin.com", label: "LinkedIn" },
   { icon: FaTwitter, link: "https://twitter.com", label: "Twitter" },
   { icon: FaFacebookF, link: "https://facebook.com", label: "Facebook" },

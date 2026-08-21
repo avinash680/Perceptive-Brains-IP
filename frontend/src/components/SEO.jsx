@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import logo from "../assets/PBIP.png";
 
 function setMetaTag(name, content, attributeName = "name") {
   if (!content) return;
@@ -42,7 +43,7 @@ export default function SEO({
   title,
   description,
   url,
-  image = "/PBIP.png",
+  image = logo,
   type = "website",
   twitterCard = "summary_large_image",
   canonical,
@@ -51,9 +52,17 @@ export default function SEO({
   keywords,
 }) {
   useEffect(() => {
-    const resolvedUrl = canonical || url || (typeof window !== "undefined" ? window.location.href : "");
-    const origin = typeof window !== "undefined" ? window.location.origin : "https://www.perceptivebrains.com";
-    const resolvedImage = image.startsWith("http") ? image : `${origin}${image}`;
+    const resolvedUrl =
+      canonical ||
+      url ||
+      (typeof window !== "undefined" ? window.location.href : "");
+    const origin =
+      typeof window !== "undefined"
+        ? window.location.origin
+        : "https://www.perceptivebrains.com";
+    const resolvedImage = image.startsWith("http")
+      ? image
+      : `${origin}${image}`;
     const organizationSchema = {
       "@context": "https://schema.org",
       "@graph": [
@@ -61,8 +70,9 @@ export default function SEO({
           "@type": "Organization",
           name: siteName,
           url: origin,
-          logo: `${origin}/PBIP.png`,
-          description: description || "Intellectual property and legal support services.",
+          logo: logo.startsWith("http") ? logo : `${origin}${logo}`,
+          description:
+            description || "Intellectual property and legal support services.",
           areaServed: "IN",
           address: {
             "@type": "PostalAddress",
@@ -106,7 +116,18 @@ export default function SEO({
     setMetaTag("twitter:image:alt", title || siteName);
 
     setStructuredData(organizationSchema);
-  }, [title, description, url, image, type, twitterCard, canonical, siteName, robots, keywords]);
+  }, [
+    title,
+    description,
+    url,
+    image,
+    type,
+    twitterCard,
+    canonical,
+    siteName,
+    robots,
+    keywords,
+  ]);
 
   return null;
 }

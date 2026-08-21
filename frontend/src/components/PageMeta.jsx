@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import logo from "../assets/PBIP.png";
 
 function setMetaTag(name, content) {
   if (!content) return;
@@ -25,15 +26,23 @@ function setPropertyTag(property, content) {
 export default function PageMeta({
   title,
   description,
-  image = "/PBIP.png",
+  image = logo,
   url,
   canonical,
   siteName = "Perceptive Brains",
 }) {
   useEffect(() => {
-    const currentUrl = canonical || url || (typeof window !== "undefined" ? window.location.href : "");
-    const origin = typeof window !== "undefined" ? window.location.origin : "https://www.perceptivebrains.com";
-    const resolvedImage = image.startsWith("http") ? image : `${origin}${image}`;
+    const currentUrl =
+      canonical ||
+      url ||
+      (typeof window !== "undefined" ? window.location.href : "");
+    const origin =
+      typeof window !== "undefined"
+        ? window.location.origin
+        : "https://www.perceptivebrains.com";
+    const resolvedImage = image.startsWith("http")
+      ? image
+      : `${origin}${image}`;
 
     if (title) {
       document.title = title;
